@@ -1,17 +1,22 @@
 <!-- 
  
 /**
- * <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwindx" :count="1" :autoup="false"></sunsin-upimg>
- * 
+ * <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwindx" :count="1" :autoup="false"></sunsin-upimg> 限制为3张
+ * <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwindx"  :notli="true"></sunsin-upimg> 不限制上传图片
+ *
  * url：上传图片地址
  * count:上传总数量(默认上传1张图片)
  * autoup:是否自动上传(无需传参数,参考以上)
  * 
  * 2018-01-07 MIT
  *
- * 版本号:v1.1
+ * 版本号:v1.1:imgs预览删除增加
  * 致谢
  * 919809734@qq.com
+ * 版本号:v1.2:新增不限制上传图片,不必固定三张，以及计算图片
+ * 致谢
+ *langice@126.com
+ *
  */ 
  
  -->
@@ -20,6 +25,7 @@
 <template name='sunsin-upimg'>
 	<view>
 		<view class="picture_list">
+
 			<view v-for="(item,index) in upload_picture_list" :key="index" class="picture_item">
 				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
 				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill"></image>
@@ -28,12 +34,12 @@
 			</view>
 
 			<view class='picture_item' v-show="upload_picture_list.length<count">
-				<view class="add-image" @click='chooseImage'>
+				<view class="add-image" @click='chooseImage(count-upload_picture_list.length)'>
 					<text>+</text>
 				</view>
 			</view>
 		</view>
-		<view class='y-up' v-show="autoup==false">
+		<view class='y-up' v-show="autoup==false || notli">
 			<button @click='uploadimage(url)' class='yes-upload' v-show="upload_picture_list.length==count">上传图片</button>
 		</view>
 	</view>
@@ -60,11 +66,15 @@
 			autoup: {
 				type: Boolean,
 				value: false
+			},
+			notli: {
+				type: Boolean,
+				value: false
 			}
 		},
 		methods: {
-			chooseImage() {
-				cImage(this, parseInt(this.count), this.url);
+			chooseImage(addcount) {
+				cImage(this, parseInt(addcount), this.url);
 			},
 			uploadimage(e) {
 				uImage(this, e);
@@ -133,12 +143,14 @@
 					res.tempFiles[i]['path_server'] = ''
 					_that.upload_picture_list.push(res.tempFiles[i])
 				}
+				if (_that.notli) {
+					uImage(_that, url);
+				}
 				if (_that.autoup) {
 					count == _that.upload_picture_list.length ? uImage(_that, url) : console.log('图片不够!')
 				}
 				_that.imgs = _that.imgs.concat(res.tempFilePaths)
 				_that.upload_picture_list = _that.upload_picture_list;
-				_that.count = count;
 			}
 		})
 	}
