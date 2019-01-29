@@ -1,21 +1,20 @@
 <!-- 
  
+方法upImgData可获取上传图片的所有信息,为数组(可以通过此来计算图片长度以及其它信息)
+ 
 /**
- * <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwindx" :count="1" :autoup="false"></sunsin-upimg> 限制为3张
- * <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwindx"  :notli="true"></sunsin-upimg> 不限制上传图片
- *
+ * <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwindx" :count="1" :autoup="false" @onUpImg="upImgData"></sunsin-upimg> 限制为3张
+ * <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwindx"  :notli="true" @onUpImg="upImgData"></sunsin-upimg> 不限制上传图片
  * url：上传图片地址
  * count:上传总数量(默认上传1张图片)
  * autoup:是否自动上传(无需传参数,参考以上)
  * 
- * 2018-01-07 MIT
+ * 2019-01-29 MIT
  *
  * 版本号:v1.1:imgs预览删除增加
  * 致谢
  * 919809734@qq.com
- * 版本号:v1.2:新增不限制上传图片,不必固定三张，以及计算图片
- * 致谢
- *langice@126.com
+ * 版本号:v1.3:新增不限制上传图片,不必固定三张，以及计算图片
  *
  */ 
  
@@ -33,8 +32,8 @@
 				<text class='del' @click='deleteImg' :data-index="index">×</text>
 			</view>
 
-			<view class='picture_item' v-show="upload_picture_list.length<count">
-				<view class="add-image" @click='chooseImage(count-upload_picture_list.length)'>
+			<view class='picture_item' v-show="upload_picture_list.length<count || notli">
+				<view class="add-image" @click='chooseImage(count)'>
 					<text>+</text>
 				</view>
 			</view>
@@ -101,9 +100,10 @@
 			success(res) {
 				let data = JSON.parse(res.data)
 				let filename = data.info
+				let uparr = [];
 				upload_picture_list[j]['path_server'] = filename
 				that.upload_picture_list = upload_picture_list
-				console.log(data)
+				that.$emit('onUpImg',that.upload_picture_list)
 			}
 		})
 		upload_task.onProgressUpdate((res) => {
@@ -147,6 +147,7 @@
 					uImage(_that, url);
 				}
 				if (_that.autoup) {
+					console.log(count,_that.upload_picture_list.length)
 					count == _that.upload_picture_list.length ? uImage(_that, url) : console.log('图片不够!')
 				}
 				_that.imgs = _that.imgs.concat(res.tempFilePaths)
