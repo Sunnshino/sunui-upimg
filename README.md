@@ -80,16 +80,16 @@
 
 ## 页面参数说明
 
-### count: String
+- count: String
 上传图片数量
 
-### autoup: Boolean
+- autoup: Boolean
 是否自动上传图片(默认true)
 
-### url: String
+- url: String
 上传后端地址
 
-### notli: Boolean
+- notli: Boolean
 是否开启不限制上传图片数量,默认false
 
 
