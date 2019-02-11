@@ -209,7 +209,7 @@
 
 	.sunsin_picture_list {
 		width: 100%;
-		padding: 20rpx;
+		padding: 20upx;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: flex-start;
@@ -219,40 +219,40 @@
 	}
 
 	.sunsin_picture_list image {
-		width: 40rpx;
-		height: 40rpx;
+		width: 40upx;
+		height: 40upx;
 		margin: 0 4%;
 	}
 
 	.sunsin-add-image {
-		width: 150rpx;
-		height: 150rpx;
+		width: 150upx;
+		height: 150upx;
 		color: #ddd;
-		font-size: 144rpx;
+		font-size: 144upx;
 		line-height: 62%;
 		text-align: center;
 		margin: 2% 0 0 2%;
 		background-color: #eee;
 		cursor: pointer;
-		border-radius: 10rpx;
+		border-radius: 10upx;
 	}
 
 	.sunsin_picture_item {
 		margin: 10px;
 		margin-left: 0;
 		position: relative;
-		width: 160rpx;
-		height: 160rpx;
+		width: 160upx;
+		height: 160upx;
 	}
 
 	.sunsin_picture_item .del {
 		position: absolute;
-		top: 0px;
-		right: -3px;
+		top: 0;
+		right: -3upx;
 		color: #fff;
 		border-radius: -4upx;
-		width: 20px;
-		height: 20px;
+		width: 40upx;
+		height: 40upx;
 		z-index: 2;
 		text-align: center;
 		background-color: #E54D42;
@@ -261,15 +261,15 @@
 	.sunsin_upload_progress {
 		font-size: 24upx;
 		color: #fff;
-		width: 167rpx;
-		height: 160rpx;
+		width: 167upx;
+		height: 160upx;
 		text-align: center;
-		line-height: 160rpx;
+		line-height: 160upx;
 		position: absolute;
 		top: 0;
 		left: 0;
 		opacity: 0.7;
-		border-radius: 8rpx;
+		border-radius: 8upx;
 		background-color: #000;
 	}
 
