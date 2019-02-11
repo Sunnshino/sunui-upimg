@@ -199,8 +199,7 @@
 	}
 
 	.icon-cameraadd {
-		font-size: 40upx;
-		;
+		font-size: 60upx;
 	}
 
 	.icon-cameraadd:before {
@@ -238,7 +237,7 @@
 	}
 
 	.sunsin_picture_item {
-		margin: 10px;
+		margin: 20upx;
 		margin-left: 0;
 		position: relative;
 		width: 160upx;
