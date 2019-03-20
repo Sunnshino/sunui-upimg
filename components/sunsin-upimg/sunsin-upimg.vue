@@ -3,13 +3,16 @@
 方法upImgData可获取上传图片的所有信息,为数组(可以通过此来计算图片长度以及其它信息)
  
 /**
- * <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind" :autoup="true" :count="2" :upreduce="true" @onUpImg="upData"></sunsin-upimg>限制为3张
- * <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwindx"  :notli="true" @onUpImg="upImgData"></sunsin-upimg> 不限制上传图片
+ *		
+		会覆盖限制上传图片数量，notli默认false
+		<sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind" :notli="true" :count="2" :upreduce="true" @onUpImg="upData" />
+		不会覆盖限制上传图片数量 
+		<sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind" :notli="false" :count="2" :upreduce="true" @onUpImg="upDatas" />
+ *
  * url：上传图片地址
  * count:上传总数量(默认上传1张图片)
- * autoup:是否自动上传(无需传参数,参考以上)
  * 
- * 2019-01-29 MIT
+ * 2019-03-20 MIT
  *
  * 版本号:v1.1:imgs预览删除增加
  * 致谢
@@ -60,10 +63,6 @@
 			count: {
 				type: Number,
 				value: 1
-			},
-			autoup: {
-				type: Boolean,
-				value: false
 			},
 			notli: {
 				type: Boolean,
@@ -136,10 +135,8 @@
 
 	// 选择图片
 	const cImage = (_that, count, url) => {
-		let a = _that.upreduce ? ['compressed'] : ['original'];
-		console.log(a)
 		uni.chooseImage({
-			count,
+			count: _that.notli ? count = 9 : count,
 			sizeType: _that.upreduce ? ['compressed'] : ['original'],
 			sourceType: ['album', 'camera'],
 			success(res) {
@@ -147,16 +144,12 @@
 					res.tempFiles[i]['upload_percent'] = 0
 					res.tempFiles[i]['path_server'] = ''
 					_that.upload_picture_list.push(res.tempFiles[i])
-				}
-				if (_that.notli) {
-					uImage(_that, url);
-				}
-				if (_that.autoup) {
-					console.log(count, _that.upload_picture_list.length)
-					count == _that.upload_picture_list.length ? uImage(_that, url) : console.log('图片不够!')
-				}
+				}!_that.notli && count == _that.upload_picture_list.length ? uImage(_that, url) : console.log();
+				_that.notli ? uImage(_that, url) : console.log();
+				_that.notli ? console.log(`%c up-img提醒您，开启了无限制上传图片模式(单次选择最多9张,选择完即上传)`, `color:#f00;font-weight:bold;`) : console.log(
+					`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${count}`, `color:#f00;font-weight:bold;`);
 				_that.imgs = _that.imgs.concat(res.tempFilePaths)
-				_that.upload_picture_list = _that.upload_picture_list;
+				_that.upload_picture_list = _that.upload_picture_list.slice(0, count);
 			}
 		})
 	}
@@ -173,6 +166,9 @@
 
 <!-- 
  此处不添加私缀scoped，方便修改样式(可以在项目修改并且覆盖本样式)
+ 
+ 如何更改上传图片iconfont图标？
+ 可以参考我的这篇博文：https://www.cnblogs.com/cisum/p/10364192.html
  -->
 <style>
 	[class*="icon-"] {
@@ -243,11 +239,12 @@
 	.sunsin_picture_item .del {
 		position: absolute;
 		top: 0;
-		right: -3upx;
+		right: -6upx;
 		color: #fff;
 		border-radius: -4upx;
 		width: 40upx;
 		height: 40upx;
+		line-height: 40upx;
 		z-index: 2;
 		text-align: center;
 		background-color: #E54D42;
