@@ -40,9 +40,6 @@
 				</view>
 			</view>
 		</view>
-		<view v-show="autoup==false || notli">
-			<button @click='uploadimage(url)' class='sunsin-yes-upload' v-show="upload_picture_list.length==count">上传图片</button>
-		</view>
 	</view>
 </template>
 
@@ -175,7 +172,7 @@
 
 
 <!-- 
- 此处不添加私缀scoped，方便修改样式 
+ 此处不添加私缀scoped，方便修改样式(可以在项目修改并且覆盖本样式)
  -->
 <style>
 	[class*="icon-"] {
@@ -183,7 +180,6 @@
 		font-size: inherit;
 		font-style: normal;
 	}
-
 
 	@font-face {
 		font-family: "iconfont";

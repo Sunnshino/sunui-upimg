@@ -1,4 +1,4 @@
-
+> 更多需求，请在评论处提交！
 
 # 单个导入组件
 ```
@@ -14,7 +14,10 @@
     <template>
         <view>
             <view>
-                <sunsin-upimg url="https://ww...." :count="2" :autoplay="true" @onUpImg="upImgData"></sunsin-upimg>
+              <!-- 会覆盖限制上传图片数量，notli默认false -->
+             <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind" :notli="false" :count="2" :upreduce="true" @onUpImg="upImgData" />
+             <!-- 不会覆盖限制上传图片数量 -->
+             <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind" :notli="true" :count="2" :upreduce="true" @onUpImg="upImgDatas" />
             </view>
         </view>
     </template>
@@ -54,7 +57,10 @@
     <template>
         <view>
             <view>
-                <sunsin-upimg url="https://ww...." :count="2" :autoplay="true" @onUpImg="upImgData"></sunsin-upimg>
+               <!-- 会覆盖限制上传图片数量（也就是count参数失效），notli默认false -->
+              <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind" :notli="false" :count="2" :upreduce="true" @onUpImg="upImgData" />
+              <!-- 不会覆盖限制上传图片数量 -->
+              <sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind" :notli="true" :count="2" :upreduce="true" @onUpImg="upImgDatas" />
             </view>
         </view>
     </template>
@@ -70,6 +76,10 @@
 				//获取上传图片的所有信息,为数组
 				upImgData(e){
 					console.log('来了,伙计',e)
+				},
+				//获取上传图片的所有信息,为数组
+				upImgDatas(e){
+					console.log('来了,伙计',e)
 				}
 			}
         }
@@ -80,24 +90,26 @@
     </style>
 ```
 
-## 组件使用(请严格按照以下格式进行配置，目前仅支持以下3种图片上传方式)
+## 组件使用(请严格按照以下格式进行配置，目前仅支持以下几种图片上传方式)
 ```
-	<sunsin-upimg url="https://xxx" :count="2" :autoup="true" @onUpImg="upImgData" /> 限制上传图片数量
-	<sunsin-upimg url="https://xxx" :count="2" :autoup="false" @onUpImg="upImgData" /> 限制上传图片数量
-	<sunsin-upimg url="https://xxx"  :notli="true" @onUpImg="upImgData" /> 不限制上传图片数量 
+	 <!-- 会覆盖限制上传图片数量（也就是count参数失效），notli默认false -->
+	<sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind" :notli="false" :count="2" :upreduce="true" @onUpImg="upImgData" />
+	<!-- 不会覆盖限制上传图片数量 -->
+	<sunsin-upimg url="https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind" :notli="true" :count="2" :upreduce="true" @onUpImg="upImgDatas" />
 ```
 
 ## 关于获取上传后返回的值
-v1.3更新：方法upImgData可获取上传图片的所有信息,为数组(可以通过此来计算图片长度以及其它信息)
-v1.4更新：自定义样式名修改以及增加了上传图片压缩可选项  
+
+##
+##### v1.3更新：方法upImgData可获取上传图片的所有信息,为数组(可以通过此来计算图片长度以及其它信息)
+##### v1.4更新：自定义样式名修改以及增加了上传图片压缩可选项
+##### v1.5更新：限制上传图片或者不限制，notli参数为true会覆盖count参数! 自动参数autoup默认
+##
 
 ## 页面参数说明
 
 - count: String
 上传图片数量
-
-- autoup: Boolean
-是否自动上传图片(默认true)
 
 - url: String
 上传后端地址
