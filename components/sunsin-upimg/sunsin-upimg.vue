@@ -144,10 +144,12 @@
 					res.tempFiles[i]['upload_percent'] = 0
 					res.tempFiles[i]['path_server'] = ''
 					_that.upload_picture_list.push(res.tempFiles[i])
-				}!_that.notli && count == _that.upload_picture_list.length ? uImage(_that, url) : console.log();
-				_that.notli ? uImage(_that, url) : console.log();
-				_that.notli ? console.log(`%c up-img提醒您，开启了无限制上传图片模式(单次选择最多9张,选择完即上传)`, `color:#f00;font-weight:bold;`) : console.log(
-					`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${count}`, `color:#f00;font-weight:bold;`);
+				}
+				!_that.notli && count == _that.upload_picture_list.length ? uImage(_that, url) : console.log();
+				_that.notli && count == 9 ? uImage(_that, url) : console.log();
+				_that.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`, `color:#f00;font-weight:bold;`) :
+					console.log(
+						`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${count}`, `color:#f00;font-weight:bold;`);
 				_that.imgs = _that.imgs.concat(res.tempFilePaths)
 				_that.upload_picture_list = _that.upload_picture_list.slice(0, count);
 			}
