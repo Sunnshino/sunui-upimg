@@ -52,12 +52,17 @@
 				 * 关于阿里云oos,开启oos的话(需要配置./ali-oos/config.js的配置项)
 				 */
 				upImgConfig: {
-					// 是否阿里云oos(为true的话url将失效)且oos地址必须是https
+					// 是否阿里云oos且oos地址必须是https
 					oos: true,
+					// 阿里云oos上传key_secret
+					AccessKeySecret: 'zmOJcaqKJB5e4gqtLunHcNoMBTdDgp',
+					// 阿里云oos上传key_id
+					OSSAccessKeyId: 'LTAIPcJL9J5OZr2G',
 					// 阿里云oos上传目录(必须存在)
-					oosDirectory:'mifanimg',
-					// 后端图片接口地址
-					url: 'https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind',
+					oosDirectory: 'mifanimg',
+					
+					// 后端图片接口地址(阿里云开启oos的话就填写阿里云上传服务器url：http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/否则的话写自己后端上传图片地址，注意把oos置为false!!!)
+					url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/',
 					// 是否开启notli(即选择完直接上传)
 					notli: false,
 					// 图片数量
@@ -69,11 +74,11 @@
 					// 上传文字描述(仅限四个字)
 					text: '添加图片',
 					// 删除图标定义背景颜色
-					delIconColor:'',
+					delIconColor: '',
 					// 删除图标字体颜色
-					delIconText:'',
-					// 上传图标替换(+),是个http,https网络图片地址,譬如这样(https://www.playsort.cn/right.png)
-					iconReplace:''
+					delIconText: '',
+					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
+					iconReplace: ''
 				},
 				/**
 				 * 图片上传配置项2
@@ -106,11 +111,13 @@
 </style>
 
 
+
 ```
 
 ### BUG以及更改
 - 上传图片组件progress进度条bug修改
 - 上传图片组件内进行注释修改
 - 上传图片组件已支持阿里云oos
+- 上传图片App旋转问题
 
 ##### *其它待开发...*

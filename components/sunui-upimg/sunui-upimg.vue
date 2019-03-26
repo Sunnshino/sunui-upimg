@@ -3,7 +3,7 @@
 		<view class="sunsin_picture_list">
 			<view v-for="(item,index) in upload_picture_list" :key="index" class="sunsin_picture_item">
 				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
-				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
+				<image v-show="item.upload_percent == 100" :src="item.path" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
 				<text class='del' @click='deleteImg' :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor">×</text>
 			</view>
@@ -30,6 +30,7 @@
 	require('./ali-oos/hmac.js');
 	require('./ali-oos/sha1.js');
 	const Crypto = require('./ali-oos/crypto.js');
+	let upLen = '';
 
 	export default {
 		data() {
@@ -45,7 +46,11 @@
 				default: function() {
 					return {
 						// 是否阿里云oos图片上传
-						oos: false,
+						oos: true,
+						// 阿里云oos上传key_secret
+						AccessKeySecret: 'xxxxxxxxxxxxkey',
+						// 阿里云oos上传key_id
+						OSSAccessKeyId: 'xxxxxxxxxxxid',
 						// 阿里云oos目录(必须存在)
 						oosDirectory: 'mifanimg/2019/3/26',
 						// 后端图片接口地址
@@ -65,11 +70,11 @@
 						// 上传文字
 						text: '添加图片',
 						// 删除图标定义背景颜色
-						delIconColor:'',
+						delIconColor: '',
 						// 删除图标字体颜色
-						delIconText:'',
+						delIconText: '',
 						// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
-						iconReplace:''
+						iconReplace: ''
 					}
 				}
 			}
@@ -108,8 +113,9 @@
 		return policyBase64;
 	}
 
-	const getSignature = (policyBase64) => {
-		const accesskey = env.AccessKeySecret;
+	const getSignature = (that, policyBase64) => {
+		console.log('key::', that.upImgConfig.AccessKeySecret)
+		const accesskey = that.upImgConfig.AccessKeySecret || env.AccessKeySecret;
 		const bytes = Crypto.HMAC(Crypto.SHA1, policyBase64, accesskey, {
 			asBytes: true
 		});
@@ -119,17 +125,18 @@
 
 	// 上传文件
 	const upload_file_server = (url, that, upload_picture_list, j) => {
+		console.log('id::', that.upImgConfig.OSSAccessKeyId)
 		const aliyunFileKey = `${that.upImgConfig.oosDirectory}/` + new Date().getTime() + Math.floor(Math.random() * 150) +
 			'.png';
 		const aliyunServerURL = env.uploadImageUrl;
-		const accessid = env.OSSAccessKeyId;
+		const accessid = that.upImgConfig.OSSAccessKeyId || env.OSSAccessKeyId;
 		const policyBase64 = getPolicyBase64();
-		const signature = getSignature(policyBase64);
-		that.upImgConfig.oos ? url = env.uploadImageUrl : url;
-		
-// 		uni.showLoading({
-// 			title:`正在上传,共${upload_picture_list.length}张`
-// 		})
+		const signature = getSignature(that, policyBase64);
+		that.upImgConfig.oos ? url = (that.upImgConfig.url || env.uploadImageUrl) : url;
+
+		// 		uni.showLoading({
+		// 			title:`正在上传,共${upload_picture_list.length}张`
+		// 		})
 		const upload_task = uni.uploadFile({
 			url,
 			filePath: upload_picture_list[j]['path'],
@@ -148,19 +155,23 @@
 					upload_picture_list[j]['path_server'] = filename;
 					that.upload_picture_list = upload_picture_list;
 					that.$emit('onUpImg', that.upload_picture_list);
-					console.log('上传数组:', that.upload_picture_list)
+					console.log('上传长度:::',that.upload_picture_list.length)
+					upLen = that.upload_picture_list.length;
 					uni.hideLoading();
-				}
+				} 
 			},
 			fail(err) {
 				uni.showLoading({
-					title:`上传失败!`
+					title: `上传失败!`
 				})
+				setTimeout(() => {
+					uni.hideLoading();
+				}, 2000)
 				console.log(err)
 			}
 		})
 		upload_task.onProgressUpdate((res) => {
-			for (let i = 0, len = that.upload_picture_list.length; i < len; i++) {
+			for (let i = 0, len = upLen; i < len; i++) {
 				upload_picture_list[i]['upload_percent'] = res.progress
 			}
 			that.upload_picture_list = upload_picture_list
