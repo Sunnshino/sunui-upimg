@@ -3,7 +3,7 @@
 		<view class="sunsin_picture_list">
 			<view v-for="(item,index) in upload_picture_list" :key="index" class="sunsin_picture_item">
 				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
-				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
+				<image v-show="item.upload_percent == 100" :src="item.path" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
 				<text class='del' @click='deleteImg' :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor">×</text>
 			</view>
@@ -156,6 +156,9 @@
 				uni.showLoading({
 					title:`上传失败!`
 				})
+				setTimeout(()=>{
+					uni.hideLoading();
+				},2000)
 				console.log(err)
 			}
 		})
