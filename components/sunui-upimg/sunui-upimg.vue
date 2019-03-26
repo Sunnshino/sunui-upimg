@@ -1,23 +1,23 @@
-<!-- 
- 
-方法upImgData可获取上传图片的所有信息,为数组(可以通过此来计算图片长度以及其它信息)
-
-具体使用查看组件内component->up-img
- -->
-
 <template name='sun-upimg'>
 	<view>
 		<view class="sunsin_picture_list">
 			<view v-for="(item,index) in upload_picture_list" :key="index" class="sunsin_picture_item">
 				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
-				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill"></image>
+				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
-				<text class='del' @click='deleteImg' :data-index="index">×</text>
+				<text class='del' @click='deleteImg' :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor">×</text>
 			</view>
-			<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli">
-				<view class="sunsin-add-image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''">
-					<text class="icon-cameraadd" :style="'color:'+upImgConfig.iconColor+''"></text>
-					<view class="icon-text" :style="'color:'+upImgConfig.iconColor+''">{{upImgConfig.text}}</view>
+			<view>
+				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-if="upImgConfig.iconReplace =='' || upImgConfig.iconReplace==undefined">
+					<view class="sunsin-add-image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''">
+						<text class="icon-cameraadd" :style="'color:'+upImgConfig.iconColor+''"></text>
+						<view class="icon-text" :style="'color:'+upImgConfig.iconColor+''">{{upImgConfig.text}}</view>
+					</view>
+				</view>
+				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-else>
+					<view class="sunsin-add-image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'">
+						<image :src="upImgConfig.iconReplace" mode="widthFix" style="width: 160upx;height: 160upx;"></image>
+					</view>
 				</view>
 			</view>
 		</view>
@@ -61,9 +61,15 @@
 						// 上传icon图片
 						iconColor: '#ddd',
 						// 替换icon上传图标 => 暂未开发
-						iconReplace: '',
+						iconReplace: 'https://www.playsort.cn/right.png',
 						// 上传文字
-						text: '添加图片'
+						text: '添加图片',
+						// 删除图标定义背景颜色
+						delIconColor:'',
+						// 删除图标字体颜色
+						delIconText:'',
+						// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
+						iconReplace:''
 					}
 				}
 			}
@@ -80,6 +86,9 @@
 			},
 			previewImg(e) {
 				pImage(e, this);
+			},
+			previewImgs(e) {
+				puImage(e, this);
 			}
 		}
 
@@ -95,7 +104,6 @@
 				["content-length-range", 0, 5 * 1024 * 1024] // 设置上传文件的大小限制,5mb
 			]
 		};
-
 		const policyBase64 = base64.encode(JSON.stringify(policyText));
 		return policyBase64;
 	}
@@ -111,16 +119,17 @@
 
 	// 上传文件
 	const upload_file_server = (url, that, upload_picture_list, j) => {
-
 		const aliyunFileKey = `${that.upImgConfig.oosDirectory}/` + new Date().getTime() + Math.floor(Math.random() * 150) +
 			'.png';
 		const aliyunServerURL = env.uploadImageUrl;
 		const accessid = env.OSSAccessKeyId;
 		const policyBase64 = getPolicyBase64();
 		const signature = getSignature(policyBase64);
-		
 		that.upImgConfig.oos ? url = env.uploadImageUrl : url;
-
+		
+// 		uni.showLoading({
+// 			title:`正在上传,共${upload_picture_list.length}张`
+// 		})
 		const upload_task = uni.uploadFile({
 			url,
 			filePath: upload_picture_list[j]['path'],
@@ -137,11 +146,16 @@
 					let data = !that.upImgConfig.oos ? JSON.parse(res.data) : '';
 					let filename = !that.upImgConfig.oos ? data.info : aliyunServerURL + aliyunFileKey;
 					upload_picture_list[j]['path_server'] = filename;
-					that.upload_picture_list = upload_picture_list
-					that.$emit('onUpImg', that.upload_picture_list)
+					that.upload_picture_list = upload_picture_list;
+					that.$emit('onUpImg', that.upload_picture_list);
+					console.log('上传数组:', that.upload_picture_list)
+					uni.hideLoading();
 				}
 			},
 			fail(err) {
+				uni.showLoading({
+					title:`上传失败!`
+				})
 				console.log(err)
 			}
 		})
@@ -153,7 +167,6 @@
 		})
 	}
 
-
 	// 上传图片(this,api.imageup)
 	const uImage = (_that, url) => {
 		for (let j in _that.upload_picture_list) {
@@ -163,14 +176,12 @@
 		}
 	}
 
-
 	// 删除图片
 	const dImage = (e, _that) => {
 		_that.upload_picture_list.splice(e.currentTarget.dataset.index, 1);
 		_that.imgs.splice(e.currentTarget.dataset.index, 1);
 		_that.upload_picture_list = _that.upload_picture_list;
 	}
-
 
 	// 选择图片
 	const cImage = (_that, count, url) => {
@@ -197,10 +208,18 @@
 		})
 	}
 
-	// 预览图片
+	// 上传前预览图片
 	const pImage = (e, _that) => {
 		uni.previewImage({
 			current: _that.imgs[e.currentTarget.dataset.index],
+			urls: _that.imgs
+		})
+	}
+
+	// 上传后预览
+	const puImage = (e, _that) => {
+		uni.previewImage({
+			current: _that.imgs[e.currentTarget.dataset.idx],
 			urls: _that.imgs
 		})
 	}
@@ -293,7 +312,7 @@
 		right: -6upx;
 		color: #fff;
 		border-radius: -4upx;
-		border-top-right-radius: 2upx;
+		border-top-right-radius: 6upx;
 		width: 40upx;
 		height: 40upx;
 		line-height: 40upx;
@@ -305,8 +324,9 @@
 	.sunsin_upload_progress {
 		font-size: 24upx;
 		color: #fff;
-		width: 167upx;
+		width: 162upx;
 		height: 160upx;
+		margin-left: 2%;
 		text-align: center;
 		line-height: 160upx;
 		position: absolute;
@@ -320,6 +340,8 @@
 	.sunsin_picture_item image {
 		width: 160upx;
 		height: 160upx;
+		box-shadow: 6upx 6upx 12upx rgba(112, 128, 144, 0.7);
+		border-radius: 15upx;
 	}
 
 	.sunsin-yes-upload {

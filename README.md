@@ -3,7 +3,8 @@
 
 ---------------------
 ### 现阶段支持功能如下
-- 图片预览
+- 图片上传前预览
+- 图片上传后预览
 - 图片预览删除
 - 图片添加
 - 图片上传限制
@@ -37,6 +38,10 @@
 	</view>
 </template>
 
+<!-- 
+ 
+ -->
+
 <script>
 	export default {
 		data() {
@@ -48,7 +53,7 @@
 				 */
 				upImgConfig: {
 					// 是否阿里云oos(为true的话url将失效)且oos地址必须是https
-					oos: false,
+					oos: true,
 					// 阿里云oos上传目录(必须存在)
 					oosDirectory:'mifanimg',
 					// 后端图片接口地址
@@ -56,13 +61,19 @@
 					// 是否开启notli(即选择完直接上传)
 					notli: false,
 					// 图片数量
-					count: 1,
+					count: 2,
 					// 新增上传背景修改
 					bgColor: '#0089FC',
 					// 新增上传icon图标颜色修改
 					iconColor: '#fff',
 					// 上传文字描述(仅限四个字)
-					text: '添加图片'
+					text: '添加图片',
+					// 删除图标定义背景颜色
+					delIconColor:'',
+					// 删除图标字体颜色
+					delIconText:'',
+					// 上传图标替换(+),是个http,https网络图片地址,譬如这样(https://www.playsort.cn/right.png)
+					iconReplace:''
 				},
 				/**
 				 * 图片上传配置项2
@@ -93,6 +104,7 @@
 <style>
 
 </style>
+
 
 ```
 
