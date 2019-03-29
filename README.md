@@ -11,10 +11,15 @@
 - 图片无上传限制
 - 图片上传进度监控
 - 支持阿里云oos上传
+- 支持单页面多复用(@onUpImg="xxxx")
 
 
 ### 开始考虑支持以下功能
 - 上传图片拖拽排序
+
+
+### 新增功能
+- **支持手动上传图片(2019/3/29)**
 
 
 ### 使用Step1(导入main.js).
@@ -31,16 +36,12 @@
 		<view>
 			<!-- 不会覆盖限制上传图片数量（也就是count参数生效），notli默认false -->
 			<view class="sun-title">上传图片</view>
-			<sunui-upimg :upImgConfig="upImgConfig" @onUpImg="upImgData" />
-			<!-- 会覆盖限制上传图片数量（也就是count参数失效），notli默认false -->
-			<sunui-upimg :upImgConfig="upImgConfig1" @onUpImg="upImgDatas" />
+			<sunui-upimg :upImgConfig="upImgConfig" @onUpImg="upImgData" ref="uImage" />
+			<!-- <button type="primary" @tap="uImageTap">上传图片</button> -->
+			<button type="primary" @tap="getUpImgInfo">获取上传图片信息</button>
 		</view>
 	</view>
 </template>
-
-<!-- 
- 
- -->
 
 <script>
 	export default {
@@ -54,13 +55,13 @@
 				upImgConfig: {
 					// 是否阿里云oos且oos地址必须是https
 					oos: true,
-					// 阿里云oos上传key_secret
+					// 阿里云oos上传key_secret(后端传)
 					AccessKeySecret: 'zmOJcaqKJB5e4gqtLunHcNoMBTdDgp',
-					// 阿里云oos上传key_id
+					// 阿里云oos上传key_id(后端传)
 					OSSAccessKeyId: 'LTAIPcJL9J5OZr2G',
 					// 阿里云oos上传目录(必须存在)
 					oosDirectory: 'mifanimg',
-					
+
 					// 后端图片接口地址(阿里云开启oos的话就填写阿里云上传服务器url：http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/否则的话写自己后端上传图片地址，注意把oos置为false!!!)
 					url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/',
 					// 是否开启notli(即选择完直接上传)
@@ -72,7 +73,7 @@
 					// 新增上传icon图标颜色修改
 					iconColor: '#fff',
 					// 上传文字描述(仅限四个字)
-					text: '添加图片',
+					text: '上传图片',
 					// 删除图标定义背景颜色
 					delIconColor: '',
 					// 删除图标字体颜色
@@ -80,35 +81,38 @@
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
 					iconReplace: ''
 				},
-				/**
-				 * 图片上传配置项2
-				 */
-				upImgConfig1: {
-					// 后端图片接口地址
-					url: 'https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind',
-					// 是否开启notli(即选择完直接上传)
-					notli: true,
-					// 图片数量(count参数失效)
-					count: 2
-				}
+				imgArr: []
 			};
 		},
 		methods: {
-			//获取上传图片的所有信息,为数组
-			upImgData(e) {
-				console.log('来了,伙计1', e)
+			// 上传图片(2019/3/29新增) -> 手动上传(需要传入上传url,还需要搭配count参数使用!)
+			uImageTap(e) {
+				this.$refs.uImage.uploadimage('http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/');
 			},
-			//获取上传图片的所有信息,为数组
-			upImgDatas(e) {
-				console.log('来了,伙计2', e)
+			//**获取上传图片返回来的数组(Step1)**
+			upImgData(e) {
+				// 上传图片数组
+				let arrImg = [];
+				for (let i = 0, len = e.length; i < len; i++) {
+					if (e[i].path_server != "") {
+						arrImg.push(e[i].path_server.split(','));
+					}
+				}
+				// 图片信息保存到data数组
+				this.imgArr = arrImg;
+			},
+			// **获取上传图片的所有信息(Step2)**
+			getUpImgInfo() {
+				console.log('多个数组:', this.imgArr);
+				console.log('转成一维数组:', this.imgArr.join().split(','));
 			}
 		}
 	}
 </script>
 
 <style>
-
 </style>
+
 
 
 

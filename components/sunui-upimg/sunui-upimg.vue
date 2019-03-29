@@ -3,7 +3,7 @@
 		<view class="sunsin_picture_list">
 			<view v-for="(item,index) in upload_picture_list" :key="index" class="sunsin_picture_item">
 				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
-				<image v-show="item.upload_percent == 100" :src="item.path" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
+				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
 				<text class='del' @click='deleteImg' :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor">×</text>
 			</view>
@@ -30,12 +30,11 @@
 	require('./ali-oos/hmac.js');
 	require('./ali-oos/sha1.js');
 	const Crypto = require('./ali-oos/crypto.js');
-	let upLen = '';
-
 	export default {
 		data() {
 			return {
 				imgs: [],
+				upLen: "",
 				upload_picture_list: []
 			};
 		},
@@ -58,7 +57,7 @@
 						// 是否开启notli(即选择完直接上传)
 						notli: false,
 						// 图片数量
-						count: 2,
+						count: 3,
 						// 默认启用图片压缩(小程序端)
 						upreduce: true,
 						// 上传图片背景颜色
@@ -113,9 +112,9 @@
 		return policyBase64;
 	}
 
-	const getSignature = (that, policyBase64) => {
-		console.log('key::', that.upImgConfig.AccessKeySecret)
-		const accesskey = that.upImgConfig.AccessKeySecret || env.AccessKeySecret;
+	const getSignature = (_this, policyBase64) => {
+		// console.log('key::', _this.upImgConfig.AccessKeySecret)
+		const accesskey = _this.upImgConfig.AccessKeySecret || env.AccessKeySecret;
 		const bytes = Crypto.HMAC(Crypto.SHA1, policyBase64, accesskey, {
 			asBytes: true
 		});
@@ -124,16 +123,15 @@
 	}
 
 	// 上传文件
-	const upload_file_server = (url, that, upload_picture_list, j) => {
-		console.log('id::', that.upImgConfig.OSSAccessKeyId)
-		const aliyunFileKey = `${that.upImgConfig.oosDirectory}/` + new Date().getTime() + Math.floor(Math.random() * 150) +
+	const upload_file_server = (url, _this, upload_picture_list, j) => {
+		// console.log('id::', _this.upImgConfig.OSSAccessKeyId)
+		const aliyunFileKey = `${_this.upImgConfig.oosDirectory}/` + new Date().getTime() + Math.floor(Math.random() * 150) +
 			'.png';
 		const aliyunServerURL = env.uploadImageUrl;
-		const accessid = that.upImgConfig.OSSAccessKeyId || env.OSSAccessKeyId;
+		const accessid = _this.upImgConfig.OSSAccessKeyId || env.OSSAccessKeyId;
 		const policyBase64 = getPolicyBase64();
-		const signature = getSignature(that, policyBase64);
-		that.upImgConfig.oos ? url = (that.upImgConfig.url || env.uploadImageUrl) : url;
-
+		const signature = getSignature(_this, policyBase64);
+		_this.upImgConfig.oos ? url = (_this.upImgConfig.url || env.uploadImageUrl) : url;
 		// 		uni.showLoading({
 		// 			title:`正在上传,共${upload_picture_list.length}张`
 		// 		})
@@ -150,15 +148,13 @@
 			},
 			success(res) {
 				if (res.statusCode == 200) {
-					let data = !that.upImgConfig.oos ? JSON.parse(res.data) : '';
-					let filename = !that.upImgConfig.oos ? data.info : aliyunServerURL + aliyunFileKey;
+					let data = !_this.upImgConfig.oos ? JSON.parse(res.data) : '';
+					let filename = !_this.upImgConfig.oos ? data.info : aliyunServerURL + aliyunFileKey;
 					upload_picture_list[j]['path_server'] = filename;
-					that.upload_picture_list = upload_picture_list;
-					that.$emit('onUpImg', that.upload_picture_list);
-					console.log('上传长度:::',that.upload_picture_list.length)
-					upLen = that.upload_picture_list.length;
+					_this.upload_picture_list = upload_picture_list;
+					_this.$emit('onUpImg', _this.upload_picture_list);
 					uni.hideLoading();
-				} 
+				}
 			},
 			fail(err) {
 				uni.showLoading({
@@ -171,67 +167,82 @@
 			}
 		})
 		upload_task.onProgressUpdate((res) => {
-			for (let i = 0, len = upLen; i < len; i++) {
+			for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
 				upload_picture_list[i]['upload_percent'] = res.progress
 			}
-			that.upload_picture_list = upload_picture_list
+			_this.upload_picture_list = upload_picture_list
 		})
 	}
 
 	// 上传图片(this,api.imageup)
-	const uImage = (_that, url) => {
-		for (let j in _that.upload_picture_list) {
-			if (_that.upload_picture_list[j]['upload_percent'] == 0) {
-				upload_file_server(url, _that, _that.upload_picture_list, j)
+	const uImage = (_this, url) => {
+		for (let j in _this.upload_picture_list) {
+			if (_this.upload_picture_list[j]['upload_percent'] == 0) {
+				upload_file_server(url, _this, _this.upload_picture_list, j)
 			}
 		}
 	}
 
 	// 删除图片
-	const dImage = (e, _that) => {
-		_that.upload_picture_list.splice(e.currentTarget.dataset.index, 1);
-		_that.imgs.splice(e.currentTarget.dataset.index, 1);
-		_that.upload_picture_list = _that.upload_picture_list;
+	const dImage = (e, _this) => {
+		_this.upload_picture_list.splice(e.currentTarget.dataset.index, 1);
+		_this.imgs.splice(e.currentTarget.dataset.index, 1);
+		_this.upload_picture_list = _this.upload_picture_list;
 	}
 
+
 	// 选择图片
-	const cImage = (_that, count, url) => {
+// 	let arr = [];
+// 	let imginfo = '';
+	const cImage = (_this, count, url) => {
 		uni.chooseImage({
-			count: _that.upImgConfig.notli ? count = 9 : count,
-			sizeType: _that.upImgConfig.upreduce ? ['compressed'] : ['original'],
+			count: _this.upImgConfig.notli ? count = 9 : count,
+			sizeType: _this.upImgConfig.upreduce ? ['compressed'] : ['original'],
 			sourceType: ['album', 'camera'],
 			success(res) {
 				for (let i in res.tempFiles) {
-					res.tempFiles[i]['upload_percent'] = 0
-					res.tempFiles[i]['path_server'] = ''
-					_that.upload_picture_list.push(res.tempFiles[i]);
-					_that.upload_picture_list.length > count ? _that.upload_picture_list = _that.upload_picture_list.slice(0, count) :
+					res.tempFiles[i]['upload_percent'] = 0;
+					res.tempFiles[i]['path_server'] = '';
+// 					uni.getImageInfo({
+// 						src: res.tempFilePaths[i],
+// 						success: function(image) {
+// 							let width = image.width.toString();
+// 							let height = image.height.toString();
+// 							let size = res.tempFiles[i].size.toString();
+// 							imginfo = (width + height + size).split(',').join();
+// 							arr.push(imginfo);
+// 							console.log(arr,imginfo,res.tempFiles[i],_this.upload_picture_list)
+// 							
+// 						}
+// 					});
+					_this.upload_picture_list.push(res.tempFiles[i]);
+					_this.upload_picture_list.length > count ? _this.upload_picture_list = _this.upload_picture_list.slice(0, count) :
 						console.log('');
-				}!_that.upImgConfig.notli && count == _that.upload_picture_list.length ? uImage(_that, url) : console.log();
-				_that.upImgConfig.notli && count == 9 ? uImage(_that, url) : console.log();
-				_that.upImgConfig.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
+				}!_this.upImgConfig.notli && count == _this.upload_picture_list.length ? uImage(_this, url) : console.log();
+				_this.upImgConfig.notli && count == 9 ? uImage(_this, url) : console.log();
+				_this.upImgConfig.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
 						`color:#f00;font-weight:bold;`) :
 					console.log(
 						`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${count}`, `color:#f00;font-weight:bold;`);
-				_that.imgs = _that.imgs.concat(res.tempFilePaths);
-				_that.upload_picture_list = _that.upload_picture_list.slice(0, count);
+				_this.imgs = _this.imgs.concat(res.tempFilePaths);
+				_this.upload_picture_list = _this.upload_picture_list.slice(0, count);
 			}
 		})
 	}
 
 	// 上传前预览图片
-	const pImage = (e, _that) => {
+	const pImage = (e, _this) => {
 		uni.previewImage({
-			current: _that.imgs[e.currentTarget.dataset.index],
-			urls: _that.imgs
+			current: _this.imgs[e.currentTarget.dataset.index],
+			urls: _this.imgs
 		})
 	}
 
 	// 上传后预览
-	const puImage = (e, _that) => {
+	const puImage = (e, _this) => {
 		uni.previewImage({
-			current: _that.imgs[e.currentTarget.dataset.idx],
-			urls: _that.imgs
+			current: _this.imgs[e.currentTarget.dataset.idx],
+			urls: _this.imgs
 		})
 	}
 </script>
@@ -264,7 +275,7 @@
 	}
 
 	.icon-text {
-		font-size: 25upx;
+		font-size: 28upx;
 		margin-top: -25%;
 	}
 
@@ -294,8 +305,8 @@
 	}
 
 	.sunsin-add-image {
-		width: 150upx;
-		height: 150upx;
+		width: 160upx;
+		height: 160upx;
 		color: #ddd;
 		font-size: 144upx;
 		text-align: center;
@@ -337,7 +348,7 @@
 		color: #fff;
 		width: 162upx;
 		height: 160upx;
-		margin-left: 2%;
+		margin-left: 3%;
 		text-align: center;
 		line-height: 160upx;
 		position: absolute;
@@ -353,11 +364,5 @@
 		height: 160upx;
 		box-shadow: 6upx 6upx 12upx rgba(112, 128, 144, 0.7);
 		border-radius: 15upx;
-	}
-
-	.sunsin-yes-upload {
-		color: #fff;
-		border-radius: 0;
-		background-color: #00a0e9;
 	}
 </style>
