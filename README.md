@@ -15,11 +15,12 @@
 
 
 ### 开始考虑支持以下功能
-- 上传图片拖拽排序
+- 七牛云上传
+- 上传图片拖拽排序(小程序支持)
 
 
 ### 新增功能
-- **支持手动上传图片(2019/3/29)**
+- 支持手动上传图片(2019/3/29)
 
 
 ### 使用Step1(导入main.js).
@@ -55,19 +56,24 @@
 				upImgConfig: {
 					// 是否阿里云oos且oos地址必须是https
 					oos: true,
-					// 阿里云oos上传key_secret(后端传)
-					AccessKeySecret: 'zmOJcaqKJB5e4gqtLunHcNoMBTdDgp',
-					// 阿里云oos上传key_id(后端传)
-					OSSAccessKeyId: 'LTAIPcJL9J5OZr2G',
-					// 阿里云oos上传目录(必须存在)
-					oosDirectory: 'mifanimg',
-
+					aliConfig:{
+						// 阿里云oos上传key_secret(后端传)
+						AccessKeySecret: 'zmOJcaqKJB5e4gqtLunHcNoMBTdDgp',
+						// 阿里云oos上传key_id(后端传)
+						OSSAccessKeyId: 'LTAIPcJL9J5OZr2G',
+						// 阿里云oos上传目录(必须存在)
+						oosDirectory: 'mifanimg',
+					},
 					// 后端图片接口地址(阿里云开启oos的话就填写阿里云上传服务器url：http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/否则的话写自己后端上传图片地址，注意把oos置为false!!!)
 					url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/',
-					// 是否开启notli(即选择完直接上传)
+					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
 					count: 2,
+					// 相机来源([相机,相册],[相机])
+					sourceType: true,
+					// 是否压缩上传照片(仅小程序生效)
+					sizeType: true,
 					// 新增上传背景修改
 					bgColor: '#0089FC',
 					// 新增上传icon图标颜色修改
@@ -86,10 +92,10 @@
 		},
 		methods: {
 			// 上传图片(2019/3/29新增) -> 手动上传(需要传入上传url,还需要搭配count参数使用!)
-			uImageTap(e) {
+			uImageTap() {
 				this.$refs.uImage.uploadimage('http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/');
 			},
-			//**获取上传图片返回来的数组(Step1)**
+			//获取上传图片返回来的数组(Step1)
 			upImgData(e) {
 				// 上传图片数组
 				let arrImg = [];
@@ -101,9 +107,9 @@
 				// 图片信息保存到data数组
 				this.imgArr = arrImg;
 			},
-			// **获取上传图片的所有信息(Step2)**
+			// 获取上传图片的所有信息(Step2)
 			getUpImgInfo() {
-				console.log('多个数组:', this.imgArr);
+				console.log('转成多维数组:', this.imgArr);
 				console.log('转成一维数组:', this.imgArr.join().split(','));
 			}
 		}
@@ -114,8 +120,6 @@
 </style>
 
 
-
-
 ```
 
 ### BUG以及更改
@@ -123,5 +127,6 @@
 - 上传图片组件内进行注释修改
 - 上传图片组件已支持阿里云oos
 - 上传图片App旋转问题
+- 更改上传对象配置项
 
 ##### *其它待开发...*

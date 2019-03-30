@@ -29,6 +29,7 @@
 	const base64 = require('./ali-oos/base64.js'); //Base64,hmac,sha1,crypto相关算法
 	require('./ali-oos/hmac.js');
 	require('./ali-oos/sha1.js');
+	// const qiniuUploader = require('./qiniu/qiniuUploader.js');
 	const Crypto = require('./ali-oos/crypto.js');
 	export default {
 		data() {
@@ -46,12 +47,14 @@
 					return {
 						// 是否阿里云oos图片上传
 						oos: true,
-						// 阿里云oos上传key_secret
-						AccessKeySecret: 'xxxxxxxxxxxxkey',
-						// 阿里云oos上传key_id
-						OSSAccessKeyId: 'xxxxxxxxxxxid',
-						// 阿里云oos目录(必须存在)
-						oosDirectory: 'mifanimg/2019/3/26',
+						aliConfig:{
+							// 阿里云oos上传key_secret(后端传)
+							AccessKeySecret: 'zmOJcaqKJB5e4gqtLunHcNoMBTdDgp',
+							// 阿里云oos上传key_id(后端传)
+							OSSAccessKeyId: 'LTAIPcJL9J5OZr2G',
+							// 阿里云oos上传目录(必须存在)
+							oosDirectory: 'mifanimg',
+						},
 						// 后端图片接口地址
 						url: 'https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind',
 						// 是否开启notli(即选择完直接上传)
@@ -79,8 +82,8 @@
 			}
 		},
 		methods: {
-			chooseImage(addcount) {
-				cImage(this, parseInt(addcount), this.upImgConfig.url);
+			chooseImage(count) {
+				cImage(this, parseInt(count), this.upImgConfig.url);
 			},
 			uploadimage(e) {
 				uImage(this, e);
@@ -113,8 +116,7 @@
 	}
 
 	const getSignature = (_this, policyBase64) => {
-		// console.log('key::', _this.upImgConfig.AccessKeySecret)
-		const accesskey = _this.upImgConfig.AccessKeySecret || env.AccessKeySecret;
+		const accesskey = _this.upImgConfig.aliConfig.AccessKeySecret || env.AccessKeySecret;
 		const bytes = Crypto.HMAC(Crypto.SHA1, policyBase64, accesskey, {
 			asBytes: true
 		});
@@ -123,20 +125,39 @@
 	}
 
 	// 上传文件
-	const upload_file_server = (url, _this, upload_picture_list, j) => {
-		// console.log('id::', _this.upImgConfig.OSSAccessKeyId)
-		const aliyunFileKey = `${_this.upImgConfig.oosDirectory}/` + new Date().getTime() + Math.floor(Math.random() * 150) +
-			'.png';
-		const aliyunServerURL = env.uploadImageUrl;
-		const accessid = _this.upImgConfig.OSSAccessKeyId || env.OSSAccessKeyId;
+	const upload_file_server = async (url, _this, upload_picture_list, j) => {
+
+
+		let config = {
+			aliyunFileKey: `${_this.upImgConfig.aliConfig.oosDirectory}/` + new Date().getTime() + Math.floor(Math.random() *
+					150) +
+				'.png',
+			aliyunServerURL: url || env.uploadImageUrl,
+			accessid: _this.upImgConfig.aliConfig.OSSAccessKeyId || env.OSSAccessKeyId,
+			url: _this.upImgConfig.oos ? url = (_this.upImgConfig.url || env.uploadImageUrl) : url,
+			oos: _this.upImgConfig.oos
+		}
+
+
+		/**
+		 * 阿里云配置
+		 */
+		const aliyunFileKey = config.aliyunFileKey ? config.aliyunFileKey : "";
+		const aliyunServerURL = config.aliyunServerURL ? config.aliyunServerURL : "";
+		const accessid = config.accessid ? config.accessid : "";
 		const policyBase64 = getPolicyBase64();
 		const signature = getSignature(_this, policyBase64);
-		_this.upImgConfig.oos ? url = (_this.upImgConfig.url || env.uploadImageUrl) : url;
-		// 		uni.showLoading({
-		// 			title:`正在上传,共${upload_picture_list.length}张`
+
+
+		/**
+		 * 即将支持七牛云(2019/3/30)
+		 */
+		// 		qiniuUploader.upload(upload_picture_list[j]['path'], (res) => {
+		// 			console.log('=====:::', res);
 		// 		})
-		const upload_task = uni.uploadFile({
-			url,
+
+		const upload_task = await uni.uploadFile({
+			url: config.url,
 			filePath: upload_picture_list[j]['path'],
 			name: 'file',
 			formData: {
@@ -146,13 +167,13 @@
 				'signature': signature,
 				'success_action_status': '200',
 			},
-			success(res) {
+			async success(res) {
 				if (res.statusCode == 200) {
-					let data = !_this.upImgConfig.oos ? JSON.parse(res.data) : '';
-					let filename = !_this.upImgConfig.oos ? data.info : aliyunServerURL + aliyunFileKey;
+					let data = !config.oos ? JSON.parse(res.data) : '';
+					let filename = !config.oos ? data.info : aliyunServerURL + aliyunFileKey;
 					upload_picture_list[j]['path_server'] = filename;
 					_this.upload_picture_list = upload_picture_list;
-					_this.$emit('onUpImg', _this.upload_picture_list);
+					await _this.$emit('onUpImg', _this.upload_picture_list);
 					uni.hideLoading();
 				}
 			},
@@ -165,25 +186,39 @@
 				}, 2000)
 				console.log(err)
 			}
-		})
-		upload_task.onProgressUpdate((res) => {
+		});
+		upload_task.onProgressUpdate(async (res) => {
 			for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
-				upload_picture_list[i]['upload_percent'] = res.progress
+				upload_picture_list[i]['upload_percent'] = await res.progress
 			}
 			_this.upload_picture_list = upload_picture_list
-		})
+		});
 	}
 
-	// 上传图片(this,api.imageup)
-	const uImage = (_this, url) => {
-		for (let j in _this.upload_picture_list) {
+
+	// 七牛云上传(私有初始化)
+	// 	const initQiniu = async () => {
+	// 		let options = {
+	// 			region: 'NCN', // 华北区
+	// 			uptokenURL: 'https://[yourserver.com]/api/uptoken',
+	// 			uptoken: 'xxxx=',
+	// 			domain: 'http://[yourBucketId].bkt.clouddn.com',
+	// 			shouldUseQiniuFileName: false
+	// 		};
+	// 		await qiniuUploader.init(options);
+	// 	}
+	// 
+
+	// 上传图片(通用)
+	const uImage = async (_this, url) => {
+		for (let j = 0, len = _this.upload_picture_list.length; j < len; j++) {
 			if (_this.upload_picture_list[j]['upload_percent'] == 0) {
-				upload_file_server(url, _this, _this.upload_picture_list, j)
+				await upload_file_server(url, _this, _this.upload_picture_list, j)
 			}
 		}
 	}
 
-	// 删除图片
+	// 删除图片(通用)
 	const dImage = (e, _this) => {
 		_this.upload_picture_list.splice(e.currentTarget.dataset.index, 1);
 		_this.imgs.splice(e.currentTarget.dataset.index, 1);
@@ -191,46 +226,48 @@
 	}
 
 
-	// 选择图片
-// 	let arr = [];
-// 	let imginfo = '';
+	// 选择图片(公有)
 	const cImage = (_this, count, url) => {
+
+		// 配置项
+		let config = {
+			count: count, //上传数量,当notli为true失效
+			url: url, //上传url
+			notli: _this.upImgConfig.notli, //是否自动上传
+			sourceType: _this.upImgConfig.sourceType, //相册来源,默认相机、相册都有
+			sizeType: _this.upImgConfig.sizeType //是否压缩照片,默认true
+		}
+
+		// initQiniu();
+
 		uni.chooseImage({
-			count: _this.upImgConfig.notli ? count = 9 : count,
-			sizeType: _this.upImgConfig.upreduce ? ['compressed'] : ['original'],
-			sourceType: ['album', 'camera'],
+			count: config.notli ? config.count = 9 : config.count,
+			sizeType: config.sizeType ? ['compressed'] : ['original'],
+			sourceType: config.sourceType ? ['album', 'camera'] : ['camera'],
 			success(res) {
-				for (let i in res.tempFiles) {
+				for (let i = 0, len = res.tempFiles.length; i < len; i++) {
 					res.tempFiles[i]['upload_percent'] = 0;
 					res.tempFiles[i]['path_server'] = '';
-// 					uni.getImageInfo({
-// 						src: res.tempFilePaths[i],
-// 						success: function(image) {
-// 							let width = image.width.toString();
-// 							let height = image.height.toString();
-// 							let size = res.tempFiles[i].size.toString();
-// 							imginfo = (width + height + size).split(',').join();
-// 							arr.push(imginfo);
-// 							console.log(arr,imginfo,res.tempFiles[i],_this.upload_picture_list)
-// 							
-// 						}
-// 					});
 					_this.upload_picture_list.push(res.tempFiles[i]);
-					_this.upload_picture_list.length > count ? _this.upload_picture_list = _this.upload_picture_list.slice(0, count) :
-						console.log('');
-				}!_this.upImgConfig.notli && count == _this.upload_picture_list.length ? uImage(_this, url) : console.log();
-				_this.upImgConfig.notli && count == 9 ? uImage(_this, url) : console.log();
-				_this.upImgConfig.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
+					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(0,
+						config.count) : '';
+				}
+				// 满足图片数量上传
+				!config.notli && config.count == _this.upload_picture_list.length ? uImage(_this, url) : '';
+				// 选择完上传(最大9张)
+				config.notli && config.count == 9 ? uImage(_this, url) : '';
+				config.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
 						`color:#f00;font-weight:bold;`) :
 					console.log(
-						`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${count}`, `color:#f00;font-weight:bold;`);
-				_this.imgs = _this.imgs.concat(res.tempFilePaths);
-				_this.upload_picture_list = _this.upload_picture_list.slice(0, count);
+						`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${config.count}`, `color:#f00;font-weight:bold;`);
+				_this.imgs = _this.imgs.concat(
+					res.tempFilePaths);
+				_this.upload_picture_list = _this.upload_picture_list.slice(0, config.count);
 			}
 		})
 	}
 
-	// 上传前预览图片
+	// 上传前预览图片(通用)
 	const pImage = (e, _this) => {
 		uni.previewImage({
 			current: _this.imgs[e.currentTarget.dataset.index],
@@ -238,7 +275,7 @@
 		})
 	}
 
-	// 上传后预览
+	// 上传后预览(通用)
 	const puImage = (e, _this) => {
 		uni.previewImage({
 			current: _this.imgs[e.currentTarget.dataset.idx],
@@ -249,8 +286,6 @@
 
 
 <!-- 
- 此处不添加私缀scoped，方便修改样式(可以在项目修改并且覆盖本样式)
- 
  如何更改上传图片iconfont图标？
  可以参考我的这篇博文：https://www.cnblogs.com/cisum/p/10364192.html
  -->
