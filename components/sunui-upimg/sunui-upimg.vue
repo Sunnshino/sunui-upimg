@@ -47,7 +47,7 @@
 					return {
 						// 是否阿里云oos图片上传
 						oos: true,
-						aliConfig:{
+						aliConfig: {
 							// 阿里云oos上传key_secret(后端传)
 							AccessKeySecret: 'zmOJcaqKJB5e4gqtLunHcNoMBTdDgp',
 							// 阿里云oos上传key_id(后端传)
@@ -238,10 +238,10 @@
 			sizeType: _this.upImgConfig.sizeType //是否压缩照片,默认true
 		}
 
-		// initQiniu();
 
+		// initQiniu();
 		uni.chooseImage({
-			count: config.notli ? config.count = 9 : config.count,
+			count: config.notli ? config.count = 9 : _this.imgs.length == 0 ? config.count : config.count-_this.imgs.length,
 			sizeType: config.sizeType ? ['compressed'] : ['original'],
 			sourceType: config.sourceType ? ['album', 'camera'] : ['camera'],
 			success(res) {
@@ -261,7 +261,7 @@
 					console.log(
 						`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${config.count}`, `color:#f00;font-weight:bold;`);
 				_this.imgs = _this.imgs.concat(
-					res.tempFilePaths);
+					res.tempFilePaths).slice(0, config.count);
 				_this.upload_picture_list = _this.upload_picture_list.slice(0, config.count);
 			}
 		})
