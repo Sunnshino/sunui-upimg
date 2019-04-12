@@ -36,7 +36,8 @@
 			return {
 				imgs: [],
 				upLen: "",
-				upload_picture_list: []
+				upload_picture_list: [],
+				maxsize: ''
 			};
 		},
 		name: 'sun-upimg',
@@ -59,6 +60,7 @@
 						url: 'https://j.dns06.net.cn/index.php?m=Api&c=index&a=uploadDownwind',
 						// 是否开启notli(即选择完直接上传)
 						notli: false,
+						maxsize: 3,
 						// 图片数量
 						count: 3,
 						// 默认启用图片压缩(小程序端)
@@ -83,7 +85,7 @@
 		},
 		methods: {
 			chooseImage(count) {
-				cImage(this, parseInt(count), this.upImgConfig.url);
+				cImage(this, parseInt(count), this.upImgConfig.url, this.upImgConfig.maxsize);
 			},
 			uploadimage(e) {
 				uImage(this, e);
@@ -170,7 +172,16 @@
 			async success(res) {
 				if (res.statusCode == 200) {
 					let data = !config.oos ? JSON.parse(res.data) : '';
-					let filename = !config.oos ? data.info : aliyunServerURL + aliyunFileKey;
+					/**
+					 * 先获取图片url(各个后端返回值不一，所以造成出入)
+					 * 
+					 * 修改获取的图片返回值路径
+					 * 
+					 * 
+					 * 提示：data.Files[0].Url改为你图片返回地址即可
+					 */
+					let file = config.oos ? "" : data.Files[0].Url; //修改了这里
+					let filename = !config.oos ? file : aliyunServerURL + aliyunFileKey;
 					upload_picture_list[j]['path_server'] = filename;
 					_this.upload_picture_list = upload_picture_list;
 					await _this.$emit('onUpImg', _this.upload_picture_list);
@@ -189,7 +200,7 @@
 		});
 		upload_task.onProgressUpdate(async (res) => {
 			for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
-				upload_picture_list[i]['upload_percent'] = await res.progress
+				upload_picture_list[i]['upload_percent'] = await res.progress;
 			}
 			_this.upload_picture_list = upload_picture_list
 		});
@@ -211,6 +222,7 @@
 
 	// 上传图片(通用)
 	const uImage = async (_this, url) => {
+		console.log('URL:', url);
 		for (let j = 0, len = _this.upload_picture_list.length; j < len; j++) {
 			if (_this.upload_picture_list[j]['upload_percent'] == 0) {
 				await upload_file_server(url, _this, _this.upload_picture_list, j)
@@ -227,28 +239,42 @@
 
 
 	// 选择图片(公有)
-	const cImage = (_this, count, url) => {
+	const cImage = (_this, count, url, maxsize) => {
 
 		// 配置项
 		let config = {
 			count: count, //上传数量,当notli为true失效
+			maxsize: maxsize,
 			url: url, //上传url
 			notli: _this.upImgConfig.notli, //是否自动上传
 			sourceType: _this.upImgConfig.sourceType, //相册来源,默认相机、相册都有
 			sizeType: _this.upImgConfig.sizeType //是否压缩照片,默认true
 		}
+		
+		// 图片size
+		let c_maxsize = '';
 
 
 		// initQiniu();
 		uni.chooseImage({
-			count: config.notli ? config.count = 9 : _this.imgs.length == 0 ? config.count : config.count-_this.imgs.length,
+			count: config.notli ? config.count = 9 : _this.imgs.length == 0 ? config.count : config.count - _this.imgs.length,
 			sizeType: config.sizeType ? ['compressed'] : ['original'],
 			sourceType: config.sourceType ? ['album', 'camera'] : ['camera'],
 			success(res) {
 				for (let i = 0, len = res.tempFiles.length; i < len; i++) {
 					res.tempFiles[i]['upload_percent'] = 0;
 					res.tempFiles[i]['path_server'] = '';
-					_this.upload_picture_list.push(res.tempFiles[i]);
+					let maxsize = Math.ceil(res.tempFiles[i].size / 1024 / 1024);
+					c_maxsize = maxsize;
+					console.log(maxsize, config.maxsize);
+					if (c_maxsize < config.maxsize) {
+						_this.upload_picture_list.push(res.tempFiles[i]);
+					}else{
+						uni.showToast({
+							title:`当前图片大小超出${config.maxsize}M`,
+							icon:'none'
+						})
+					}
 					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(0,
 						config.count) : '';
 				}
@@ -257,11 +283,12 @@
 				// 选择完上传(最大9张)
 				config.notli && config.count == 9 ? uImage(_this, url) : '';
 				config.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
-						`color:#f00;font-weight:bold;`) :
-					console.log(
-						`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${config.count}`, `color:#f00;font-weight:bold;`);
-				_this.imgs = _this.imgs.concat(
-					res.tempFilePaths).slice(0, config.count);
+					`color:#f00;font-weight:bold;`) : console.log(
+					`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${config.count}`, `color:#f00;font-weight:bold;`);
+				if (c_maxsize < config.maxsize) {
+					_this.imgs = _this.imgs.concat(
+						res.tempFilePaths).slice(0, config.count);
+				}
 				_this.upload_picture_list = _this.upload_picture_list.slice(0, config.count);
 			}
 		})
