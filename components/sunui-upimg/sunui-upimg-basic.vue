@@ -43,7 +43,7 @@
 		},
 		methods: {
 			chooseImage(count) {
-				cImage(this, parseInt(count), this.upImgConfig, this.upImgConfig.url, this.upImgConfig.maxsize);
+				cImage(this, parseInt(count), this.upImgConfig, this.upImgConfig.url);
 			},
 			uploadimage(e) {
 				uImage(this, e);
@@ -115,21 +115,8 @@
 	}
 
 	// 删除图片(通用)
-	const dImage = (e, _this) => {
-		console.log('删除的图片url(可以调接口进行删除):', e.currentTarget.dataset.url);
-		/**
-		 * 在这里写处理逻辑,譬如
-		 */
-		// 		uni.request({
-		// 			url: 'xxxxxx',
-		// 			method: 'GET',
-		// 			data: {
-		// 				url:e.currentTarget.dataset.url
-		// 			},
-		// 			success: res => {},
-		// 			fail: () => {},
-		// 			complete: () => {}
-		// 		});
+	const dImage = async (e, _this) => {
+		await _this.$emit('onImgDel',{url:e.currentTarget.dataset.url});
 		_this.upload_picture_list.splice(e.currentTarget.dataset.index, 1);
 		_this.imgs.splice(e.currentTarget.dataset.index, 1);
 		_this.upload_picture_list = _this.upload_picture_list;
@@ -137,17 +124,16 @@
 
 
 	// 选择图片(通用)
-	const cImage = (_this, count, configs, url, maxsize) => {
+	const cImage = (_this, count, configs, url) => {
 		let config = {
 			basicConfig: {
 				url: configs.basicConfig.url
 			},
-			count: count, //上传数量,当notli为true失效
-			maxsize: '',
-			url: url, //上传url
-			notli: _this.upImgConfig.notli, //是否自动上传
-			sourceType: _this.upImgConfig.sourceType, //相册来源,默认相机、相册都有
-			sizeType: _this.upImgConfig.sizeType //是否压缩照片,默认true
+			count: count,
+			url: url,
+			notli: _this.upImgConfig.notli,
+			sourceType: _this.upImgConfig.sourceType,
+			sizeType: _this.upImgConfig.sizeType
 		}
 
 		uni.chooseImage({
@@ -162,9 +148,7 @@
 					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(0,
 						config.count) : '';
 				}
-				// 满足图片数量上传
 				!config.notli && config.count == _this.upload_picture_list.length ? uImage(_this, url, config) : '';
-				// 选择完上传(最大9张)
 				config.notli && config.count == 9 ? uImage(_this, url, config) : '';
 				config.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
 					`color:#f00;font-weight:bold;`) : console.log(
@@ -205,8 +189,8 @@
 	*/
 	.icon-addicon {
 		display: block;
-		width: 120upx;
-		height: 120upx;
+		width: 72upx;
+		height: 72upx;
 		text-indent: 100%;
 		overflow: hidden;
 		white-space: nowrap;

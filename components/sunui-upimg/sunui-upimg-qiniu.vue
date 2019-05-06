@@ -44,7 +44,7 @@
 		},
 		methods: {
 			chooseImage(count) {
-				cImage(this, parseInt(count), this.upImgConfig, this.upImgConfig.url);
+				cImage(this, parseInt(count), this.upImgConfig);
 			},
 			uploadimage(e) {
 				uImage(this, e);
@@ -63,7 +63,7 @@
 	// 上传文件
 	const upload_file_server = async (url, _this, configs, upload_picture_list, j) => {
 		let qiniuConfig = {
-			region: configs.qiniuConfig.region, // 华北区
+			region: configs.qiniuConfig.region,
 			uptokenURL: configs.qiniuConfig.uptokenURL,
 			uptoken: configs.qiniuConfig.uptoken,
 			domain: configs.qiniuConfig.domain,
@@ -73,7 +73,6 @@
 		}
 		initQiniu(qiniuConfig);
 		qiniuUploader.upload(upload_picture_list[j]['path'], async (res) => {
-				// console.log('file url is: ' + res.fileUrl);
 				upload_picture_list[j]['path_server'] = `http://${res.fileUrl}`;
 				_this.upload_picture_list = upload_picture_list;
 				await _this.$emit('onUpImg', _this.upload_picture_list);
@@ -108,7 +107,6 @@
 
 	// 上传图片(通用)
 	const uImage = async (_this, url, config) => {
-		// console.log('URL:', url, config);
 		for (let j = 0, len = _this.upload_picture_list.length; j < len; j++) {
 			if (_this.upload_picture_list[j]['upload_percent'] == 0) {
 				await upload_file_server(url, _this, config, _this.upload_picture_list, j)
@@ -117,21 +115,8 @@
 	}
 
 	// 删除图片(通用)
-	const dImage = (e, _this) => {
-		console.log('删除的图片url(可以调接口进行删除):', e.currentTarget.dataset.url);
-		/**
-		 * 在这里写处理逻辑,譬如
-		 */
-		// 		uni.request({
-		// 			url: 'xxxxxx',
-		// 			method: 'GET',
-		// 			data: {
-		// 				url:e.currentTarget.dataset.url
-		// 			},
-		// 			success: res => {},
-		// 			fail: () => {},
-		// 			complete: () => {}
-		// 		});
+	const dImage = async (e, _this) => {
+		await _this.$emit('onImgDel',{url:e.currentTarget.dataset.url});
 		_this.upload_picture_list.splice(e.currentTarget.dataset.index, 1);
 		_this.imgs.splice(e.currentTarget.dataset.index, 1);
 		_this.upload_picture_list = _this.upload_picture_list;
@@ -139,7 +124,7 @@
 
 
 	// 选择图片(通用)
-	const cImage = (_this, count, configs, url) => {
+	const cImage = (_this, count, configs) => {
 		let config = {
 			qiniuConfig: {
 				region: configs.qiniuConfig.region,
@@ -151,11 +136,10 @@
 				key: configs.qiniuConfig.key || (new Date()).getTime(),
 				qiniu: configs.qiniuConfig.qiniu
 			},
-			count: count, //上传数量,当notli为true失效
-			url: url, //上传url
-			notli: _this.upImgConfig.notli, //是否自动上传
-			sourceType: _this.upImgConfig.sourceType, //相册来源,默认相机、相册都有
-			sizeType: _this.upImgConfig.sizeType //是否压缩照片,默认true
+			count: count,
+			notli: _this.upImgConfig.notli,
+			sourceType: _this.upImgConfig.sourceType,
+			sizeType: _this.upImgConfig.sizeType
 		}
 		uni.chooseImage({
 			count: config.notli ? config.count = 9 : _this.imgs.length == 0 ? config.count : config.count - _this.imgs.length,
@@ -169,9 +153,7 @@
 					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(0,
 						config.count) : '';
 				}
-				// 满足图片数量上传
 				!config.notli && config.count == _this.upload_picture_list.length ? uImage(_this, url, config) : '';
-				// 选择完上传(最大9张)
 				config.notli && config.count == 9 ? uImage(_this, url, config) : '';
 				config.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
 					`color:#f00;font-weight:bold;`) : console.log(
@@ -213,8 +195,8 @@
 	*/
 	.icon-addicon {
 		display: block;
-		width: 120upx;
-		height: 120upx;
+		width: 72upx;
+		height: 72upx;
 		text-indent: 100%;
 		overflow: hidden;
 		white-space: nowrap;

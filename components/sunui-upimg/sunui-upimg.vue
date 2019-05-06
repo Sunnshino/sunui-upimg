@@ -237,21 +237,8 @@
 	}
 
 	// 删除图片(通用)
-	const dImage = (e, _this) => {
-		console.log('删除的图片url(可以调接口进行删除):', e.currentTarget.dataset.url);
-		/**
-		 * 在这里写处理逻辑,譬如
-		 */
-		// 		uni.request({
-		// 			url: 'xxxxxx',
-		// 			method: 'GET',
-		// 			data: {
-		// 				url:e.currentTarget.dataset.url
-		// 			},
-		// 			success: res => {},
-		// 			fail: () => {},
-		// 			complete: () => {}
-		// 		});
+	const dImage = async (e, _this) => {
+		await _this.$emit('onImgDel',{url:e.currentTarget.dataset.url});
 		_this.upload_picture_list.splice(e.currentTarget.dataset.index, 1);
 		_this.imgs.splice(e.currentTarget.dataset.index, 1);
 		_this.upload_picture_list = _this.upload_picture_list;

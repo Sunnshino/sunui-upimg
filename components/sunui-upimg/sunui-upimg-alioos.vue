@@ -67,21 +67,19 @@
 		}
 
 	}
-	// 阿里云(不影响七牛运行)
 	const getPolicyBase64 = () => {
 		let date = new Date();
 		date.setHours(date.getHours() + env.timeout);
 		let srcT = date.toISOString();
 		const policyText = {
-			"expiration": srcT, //设置该Policy的失效时间，超过这个失效时间之后，就没有办法通过这个policy上传文件了 
+			"expiration": srcT,
 			"conditions": [
-				["content-length-range", 0, 5 * 1024 * 1024] // 设置上传文件的大小限制,5mb
+				["content-length-range", 0, 5 * 1024 * 1024]
 			]
 		};
 		const policyBase64 = base64.encode(JSON.stringify(policyText));
 		return policyBase64;
 	}
-	// 阿里云(不影响七牛运行)
 	const getSignature = (_this, policyBase64) => {
 		const accesskey = _this.upImgConfig.aliConfig.AccessKeySecret || env.AccessKeySecret;
 		const bytes = Crypto.HMAC(Crypto.SHA1, policyBase64, accesskey, {
@@ -93,6 +91,7 @@
 
 	// 上传文件
 	const upload_file_server = async (url, _this, configs, upload_picture_list, j) => {
+		
 		let aliConfig = {
 			aliyunFileKey: `${configs.aliConfig.oosDirectory}/` + new Date().getTime() + Math.floor(Math.random() *
 					150) +
@@ -102,16 +101,14 @@
 			url: configs.aliConfig.url || "",
 			oos: configs.aliConfig.oos || false
 		}
-		/**
-		 * 阿里云 (不影响七牛运行)
-		 */
+		
 		const aliyunFileKey = aliConfig.aliyunFileKey ? aliConfig.aliyunFileKey : "";
 		const aliyunServerURL = aliConfig.aliyunServerURL ? aliConfig.aliyunServerURL : "";
 		const accessid = aliConfig.accessid ? aliConfig.accessid : "";
 		const policyBase64 = getPolicyBase64();
 		const signature = getSignature(_this, policyBase64);
+		
 
-		// 阿里云oos+后端(使用七牛(==.==)的话,注释掉我)
 		const upload_task = await uni.uploadFile({
 			url: aliConfig.url,
 			filePath: upload_picture_list[j]['path'],
@@ -146,7 +143,6 @@
 				console.log(err)
 			}
 		});
-		// 阿里云oos+后端(使用七牛(==.==)的话,注释掉我)
 		upload_task.onProgressUpdate(async (res) => {
 			for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
 				upload_picture_list[i]['upload_percent'] = await res.progress;
@@ -166,21 +162,8 @@
 	}
 
 	// 删除图片(通用)
-	const dImage = (e, _this) => {
-		console.log('删除的图片url(可以调接口进行删除):', e.currentTarget.dataset.url);
-		/**
-		 * 在这里写处理逻辑,譬如
-		 */
-		// 		uni.request({
-		// 			url: 'xxxxxx',
-		// 			method: 'GET',
-		// 			data: {
-		// 				url:e.currentTarget.dataset.url
-		// 			},
-		// 			success: res => {},
-		// 			fail: () => {},
-		// 			complete: () => {}
-		// 		});
+	const dImage = async (e, _this) => {
+		await _this.$emit('onImgDel',{url:e.currentTarget.dataset.url});
 		_this.upload_picture_list.splice(e.currentTarget.dataset.index, 1);
 		_this.imgs.splice(e.currentTarget.dataset.index, 1);
 		_this.upload_picture_list = _this.upload_picture_list;
@@ -191,21 +174,15 @@
 	const cImage = (_this, count, configs, url) => {
 		let config = {
 			aliConfig: {
-				// 阿里云oos上传key_secret(后端传)
 				AccessKeySecret: configs.aliConfig.AccessKeySecret,
-				// 阿里云oos上传key_id(后端传)
 				OSSAccessKeyId: configs.aliConfig.OSSAccessKeyId,
-				// 阿里云oos上传目录(必须存在)
 				oosDirectory: configs.aliConfig.oosDirectory,
-				// 阿里云上传url
-				url: configs.aliConfig.url,
-				// oos
-				oos: configs.aliConfig.oos
+				url: configs.aliConfig.url
 			},
-			count: count, //上传数量,当notli为true失效
-			notli: _this.upImgConfig.notli, //是否自动上传
-			sourceType: _this.upImgConfig.sourceType, //相册来源,默认相机、相册都有
-			sizeType: _this.upImgConfig.sizeType //是否压缩照片,默认true
+			count: count,
+			notli: _this.upImgConfig.notli,
+			sourceType: _this.upImgConfig.sourceType,
+			sizeType: _this.upImgConfig.sizeType
 		}
 
 		uni.chooseImage({
@@ -213,7 +190,6 @@
 			sizeType: config.sizeType ? ['compressed'] : ['original'],
 			sourceType: config.sourceType ? ['album', 'camera'] : ['camera'],
 			success(res) {
-				// console.log(res.tempFiles);
 				_this.cacheBlob = res.tempFiles[0].path;
 				for (let i = 0, len = res.tempFiles.length; i < len; i++) {
 					res.tempFiles[i]['upload_percent'] = 0;
@@ -222,9 +198,7 @@
 					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(0,
 						config.count) : '';
 				}
-				// 满足图片数量上传
 				!config.notli && config.count == _this.upload_picture_list.length ? uImage(_this, url, config) : '';
-				// 选择完上传(最大9张)
 				config.notli && config.count == 9 ? uImage(_this, url, config) : '';
 				config.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
 					`color:#f00;font-weight:bold;`) : console.log(
@@ -283,17 +257,6 @@
 	.icon-text {
 		font-size: 28upx;
 		margin-top: -25%;
-	}
-
-	.icon-cameraadd {
-		font-family: "iconfont" !important;
-		font-size: inherit;
-		font-style: normal;
-		font-size: 60upx;
-	}
-
-	.icon-cameraadd:before {
-		content: "\e724";
 	}
 
 	.sunsin_picture_list {

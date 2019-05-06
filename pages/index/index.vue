@@ -10,7 +10,7 @@
 			<button type="primary" @tap="getUpImgInfoBasic">获取上传Basic图片信息</button>
 
 
-			<sunui-upoos :upImgConfig="upImgOos" @onUpImg="upOosData"></sunui-upoos>
+			<sunui-upoos :upImgConfig="upImgOos" @onUpImg="upOosData" @onImgDel="delImgInfo"></sunui-upoos>
 			<button type="primary" @tap="getUpImgInfoOos">获取上传Oos图片信息</button>
 
 			<sunui-upqiniu :upImgConfig="upImgQiniu" @onUpImg="upQiniuData"></sunui-upqiniu>
@@ -177,6 +177,10 @@
 			};
 		},
 		methods: {
+			// 删除图片
+			async delImgInfo(e){
+				console.log('你删除的图片地址为:',e);
+			},
 			// 图片预览
 			async prievwImage(){
 				uni.previewImage({
