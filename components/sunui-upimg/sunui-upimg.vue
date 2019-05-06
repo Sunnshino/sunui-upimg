@@ -48,7 +48,19 @@
 			}
 		},
 		created() {
-			console.log(this.upImgConfig);
+			/**
+			 * 如果有想上传预览以前的图片,可在此扩展(但需要当前图片的blob->无法创建,还要加入upload_percent:100,如以下模拟数据)
+			 * 
+			 * 必要：
+			 * 1. blob(无法创建),只能自己写一个预览图片
+			 * 2. upload_percent: 100
+			 * 3. path_server:'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/mifanimg/1557136200386126.png'
+			 */
+			this.upload_picture_list = [{
+				path: 'blob:http://localhost:8081/5ad3572d-5ea4-4e5a-bba2-4e59f91b0d91',
+				path_server: "http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/mifanimg/1557136200386126.png",
+				upload_percent: 100
+			}]
 		},
 		methods: {
 			chooseImage(count) {
@@ -334,9 +346,13 @@
 
 	// 上传后预览(通用)
 	const puImage = (e, _this) => {
+		let cacheImg = [];
+		for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
+			cacheImg.push(_this.upload_picture_list[i].path);
+		}
 		uni.previewImage({
-			current: _this.imgs[e.currentTarget.dataset.idx],
-			urls: _this.imgs
+			current: cacheImg[e.currentTarget.dataset.idx],
+			urls: cacheImg
 		})
 	}
 </script>

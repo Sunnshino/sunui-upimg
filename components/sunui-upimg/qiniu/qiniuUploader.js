@@ -108,7 +108,7 @@ function doUpload(filePath, success, fail, options, progress, cancelTask) {
             var fileUrl = config.qiniuImageURLPrefix + '/' + dataObject.key;
             dataObject.fileUrl = fileUrl
             dataObject.imageURL = fileUrl;
-            console.log(dataObject);
+            // console.log(dataObject);
             if (success) {
               success(dataObject);
             }
