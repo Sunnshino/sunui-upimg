@@ -80,13 +80,13 @@
 					// 先获取图片url(各个后端返回值不一，所以造成出入)
 					// 修改获取的图片返回值路径
 					// 提示：data.info改为你图片返回地址即可
-					upload_picture_list[j]['path_server'] = data.info; //修改返回图片地址即可(2019/05/06) => 无论是腾讯云还是阿里云或者其它(只要返回图片地址以及引入对应的js文件即可扩展本插件)
+					upload_picture_list[j]['path_server'] = data.info; //修改返回图片地址即可(2019/05/06) => 无论是腾讯云还是阿里云或者其它(只要返回图片地址以及引入对应的js文件进行一些配置即可扩展本插件)
 					_this.upload_picture_list = upload_picture_list;
 					await _this.$emit('onUpImg', _this.upload_picture_list);
 					uni.hideLoading();
 				}
 			},
-			fail(err) {
+			async fail(err) {
 				uni.showLoading({
 					title: `上传失败!`
 				})
