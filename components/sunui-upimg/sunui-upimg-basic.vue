@@ -29,7 +29,6 @@
 		data() {
 			return {
 				imgs: [],
-				upLen: "",
 				upload_picture_list: [],
 			};
 		},
