@@ -209,17 +209,6 @@
 		margin-top: -25%;
 	}
 
-	.icon-cameraadd {
-		font-family: "iconfont" !important;
-		font-size: inherit;
-		font-style: normal;
-		font-size: 60upx;
-	}
-
-	.icon-cameraadd:before {
-		content: "\e724";
-	}
-
 	.sunsin_picture_list {
 		width: 100%;
 		padding: 20upx;
