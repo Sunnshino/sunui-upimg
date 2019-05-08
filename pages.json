@@ -5,6 +5,10 @@
 			"style": {
 				"navigationBarTitleText": "uni-app"
 			}
+		},
+		{
+			"path": "pages/draw/draw",
+			"style": {}
 		}
 	],
 	"globalStyle": {

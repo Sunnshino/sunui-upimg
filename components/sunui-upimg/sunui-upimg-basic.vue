@@ -5,18 +5,18 @@
 				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
 				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
-				<text class='del' @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor">×</text>
+				<text class='del' @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor" :hidden="!upImgConfig.isDelIcon">×</text>
 			</view>
 			<view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-if="upImgConfig.iconReplace =='' || upImgConfig.iconReplace==undefined">
-					<view class="sunsin-add-image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''">
+					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''">
 						<view class="icon-addicon"></view>
-						<view class="icon-text" :style="'color:'+upImgConfig.iconColor+''">{{upImgConfig.text}}</view>
+						<view class="icon-text" :style="'color:'+upImgConfig.iconColor+';width:100%;'">{{upImgConfig.text}}</view>
 					</view>
 				</view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-else>
-					<view class="sunsin-add-image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'">
-						<image :src="upImgConfig.iconReplace" mode="widthFix" style="width: 160upx;height: 160upx;"></image>
+					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'">
+						<image :src="upImgConfig.iconReplace" class="icon_replace"></image>
 					</view>
 				</view>
 			</view>
@@ -25,11 +25,14 @@
 </template>
 
 <script>
+	// #ifdef APP-PLUS
+	const compressImage = require('../common/sunui-upimg-util.js'); //引入这位小伙伴的工具集:http://ext.dcloud.net.cn/plugin?id=341
+	const device = uni.getSystemInfoSync();
+	// #endif
 	export default {
 		data() {
 			return {
-				imgs: [],
-				upLen: "",
+				upload_after_list: [],
 				upload_picture_list: [],
 			};
 		},
@@ -39,11 +42,9 @@
 				type: Object
 			}
 		},
-		created() {
-		},
 		methods: {
 			chooseImage(count) {
-				cImage(this, parseInt(count), this.upImgConfig, this.upImgConfig.url);
+				cImage(this, parseInt(count), this.upImgConfig);
 			},
 			uploadimage(e) {
 				uImage(this, e);
@@ -62,7 +63,7 @@
 	}
 
 	// 上传文件
-	const upload_file_server = async (url, _this, configs, upload_picture_list, j) => {
+	const upload_file_server = async (_this, configs, upload_picture_list, j) => {
 
 		let basicConfig = {
 			url: configs.basicConfig.url || ""
@@ -80,20 +81,21 @@
 					// 先获取图片url(各个后端返回值不一，所以造成出入)
 					// 修改获取的图片返回值路径
 					// 提示：data.info改为你图片返回地址即可
-					upload_picture_list[j]['path_server'] = data.info; //修改返回图片地址即可(2019/05/06) => 无论是腾讯云还是阿里云或者其它(只要返回图片地址以及引入对应的js文件即可扩展本插件)
+					upload_picture_list[j]['path_server'] = data.info; //修改返回图片地址即可(2019/05/06) => 无论是腾讯云还是阿里云或者其它(只要返回图片地址以及引入对应的js文件进行一些配置即可扩展本插件)
 					_this.upload_picture_list = upload_picture_list;
 					await _this.$emit('onUpImg', _this.upload_picture_list);
 					uni.hideLoading();
 				}
 			},
-			fail(err) {
+			async fail(err) {
 				uni.showLoading({
 					title: `上传失败!`
-				})
+				});
+				_this.upload_picture_list = [];
 				setTimeout(() => {
 					uni.hideLoading();
 				}, 2000)
-				console.log(err)
+				console.warn(err,'请检查是否CORB/CORS错误!')
 			}
 		});
 		upload_task.onProgressUpdate(async (res) => {
@@ -104,56 +106,70 @@
 		});
 	}
 
+	const compressImageHandler = async (src) => {
+		console.log('platform===' + device.platform)
+		const tempPath = await compressImage(src, device.platform);
+		console.log('tempPath-----' + tempPath);
+		return tempPath;
+	}
+
+
 	// 上传图片(通用)
-	const uImage = async (_this, url, config) => {
-		console.log('URL:', url, config);
+	const uImage = async (_this, config) => {
 		for (let j = 0, len = _this.upload_picture_list.length; j < len; j++) {
 			if (_this.upload_picture_list[j]['upload_percent'] == 0) {
-				await upload_file_server(url, _this, config, _this.upload_picture_list, j)
+				await upload_file_server(_this, config, _this.upload_picture_list, j)
 			}
 		}
 	}
 
 	// 删除图片(通用)
 	const dImage = async (e, _this) => {
-		await _this.$emit('onImgDel',{url:e.currentTarget.dataset.url});
+		await _this.$emit('onImgDel', {
+			url: e.currentTarget.dataset.url
+		});
 		_this.upload_picture_list.splice(e.currentTarget.dataset.index, 1);
-		_this.imgs.splice(e.currentTarget.dataset.index, 1);
+		_this.upload_after_list.splice(e.currentTarget.dataset.index, 1);
 		_this.upload_picture_list = _this.upload_picture_list;
 	}
 
-
 	// 选择图片(通用)
-	const cImage = (_this, count, configs, url) => {
+	const cImage = (_this, count, configs) => {
 		let config = {
 			basicConfig: {
 				url: configs.basicConfig.url
 			},
-			count: count,
-			url: url,
-			notli: _this.upImgConfig.notli,
-			sourceType: _this.upImgConfig.sourceType,
-			sizeType: _this.upImgConfig.sizeType
+			count,
+			notli: configs.notli,
+			sourceType: configs.sourceType,
+			sizeType: configs.sizeType,
+			tips: configs.tips || false
 		}
-
 		uni.chooseImage({
-			count: config.notli ? config.count = 9 : _this.imgs.length == 0 ? config.count : config.count - _this.imgs.length,
+			count: config.notli ? config.count = 9 : _this.upload_after_list.length == 0 ? config.count : config.count -
+				_this.upload_after_list.length,
 			sizeType: config.sizeType ? ['compressed'] : ['original'],
 			sourceType: config.sourceType ? ['album', 'camera'] : ['camera'],
-			success(res) {
+			success: async (res) => {
 				for (let i = 0, len = res.tempFiles.length; i < len; i++) {
 					res.tempFiles[i]['upload_percent'] = 0;
 					res.tempFiles[i]['path_server'] = '';
+					// #ifdef APP-PLUS
+					const src = await compressImageHandler(res.tempFilePaths[i]);
+					_this.upload_picture_list.push(src);
+					// #endif
 					_this.upload_picture_list.push(res.tempFiles[i]);
-					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(0,
+					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(
+						0,
 						config.count) : '';
+				}!config.notli && config.count == _this.upload_picture_list.length ? uImage(_this, config) : '';
+				config.notli && config.count == 9 ? uImage(_this, config) : '';
+				if (config.tips) {
+					config.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
+						`color:#f00;font-weight:bold;`) : console.log(
+						`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${config.count}`, `color:#f00;font-weight:bold;`);
 				}
-				!config.notli && config.count == _this.upload_picture_list.length ? uImage(_this, url, config) : '';
-				config.notli && config.count == 9 ? uImage(_this, url, config) : '';
-				config.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
-					`color:#f00;font-weight:bold;`) : console.log(
-					`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${config.count}`, `color:#f00;font-weight:bold;`);
-				_this.imgs = _this.imgs.concat(res.tempFilePaths).slice(0, config.count);
+				_this.upload_after_list = _this.upload_after_list.concat(res.tempFilePaths).slice(0, config.count);
 				_this.upload_picture_list = _this.upload_picture_list.slice(0, config.count);
 			}
 		})
@@ -162,15 +178,19 @@
 	// 上传前预览图片(通用)
 	const pImage = (e, _this) => {
 		uni.previewImage({
-			current: _this.imgs[e.currentTarget.dataset.index],
-			urls: _this.imgs
+			current: _this.upload_after_list[e.currentTarget.dataset.index],
+			urls: _this.upload_after_list
 		})
 	}
 
 	// 上传后预览(通用)
-	const puImage = (e, _this) => {
+	const puImage = async(e, _this) => {
 		let cacheImg = [];
 		for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
+			// #ifdef APP-PLUS
+			const src = await compressImageHandler(_this.upload_picture_list[i].path);
+			cacheImg.push(src);
+			// #endif
 			cacheImg.push(_this.upload_picture_list[i].path);
 		}
 		uni.previewImage({
@@ -195,7 +215,7 @@
 		overflow: hidden;
 		white-space: nowrap;
 		/* #ifdef MP-WEIXIN */
-		background: url('../static/sunui-upimg/icon/icon-up.svg') no-repeat;
+		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
 		/* #endif */
 		/* #ifdef H5 */
 		background: url('../static/sunui-upimg/icon/icon-up.svg') no-repeat;
@@ -209,20 +229,10 @@
 		margin-top: -25%;
 	}
 
-	.icon-cameraadd {
-		font-family: "iconfont" !important;
-		font-size: inherit;
-		font-style: normal;
-		font-size: 60upx;
-	}
-
-	.icon-cameraadd:before {
-		content: "\e724";
-	}
-
+		/* 循环列表样式 */
 	.sunsin_picture_list {
-		width: 100%;
-		padding: 20upx;
+		width: 96%;
+		padding: 2%;
 		display: flex;
 		flex-wrap: wrap;
 		align-items: flex-start;
@@ -230,14 +240,15 @@
 		flex-direction: row;
 		justify-content: flex-start;
 	}
-
+	
 	.sunsin_picture_list image {
 		width: 40upx;
 		height: 40upx;
 		margin: 0 4%;
 	}
-
-	.sunsin-add-image {
+	
+	/* 添加图片样式 */
+	.sunsin_add_image {
 		width: 160upx;
 		height: 160upx;
 		color: #ddd;
@@ -246,25 +257,26 @@
 		margin: 2% 0 0 2%;
 		background-color: #eee;
 		cursor: pointer;
-		border-radius: 10upx;
+		border-radius: 8upx;
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		flex-wrap: wrap;
 	}
-
+	/* 预览图片 */
 	.sunsin_picture_item {
-		margin: 20upx;
-		margin-left: 0;
 		position: relative;
 		width: 160upx;
 		height: 160upx;
+		margin: 20upx;
+		margin-left: 0;
 	}
-
+	
+	/* 删除按钮样式 */
 	.sunsin_picture_item .del {
 		position: absolute;
 		top: 0;
-		right: -6upx;
+		right: -4.2%;
 		color: #fff;
 		border-radius: -4upx;
 		border-top-right-radius: 6upx;
@@ -275,13 +287,13 @@
 		text-align: center;
 		background-color: #E54D42;
 	}
-
+	/* 进度遮罩层样式 */
 	.sunsin_upload_progress {
 		font-size: 24upx;
 		color: #fff;
-		width: 162upx;
+		width: 160upx;
 		height: 160upx;
-		margin-left: 3%;
+		margin-left: 4%;
 		text-align: center;
 		line-height: 160upx;
 		position: absolute;
@@ -291,7 +303,7 @@
 		border-radius: 8upx;
 		background-color: #000;
 	}
-
+	/* 自定义添加图片样式 */
 	.sunsin_picture_item image {
 		width: 160upx;
 		height: 160upx;

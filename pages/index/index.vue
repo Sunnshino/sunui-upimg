@@ -1,10 +1,9 @@
 <template>
 	<view>
 		<view>
-			<button type="primary" @tap="prievwImage">选择图片</button>
 			<!-- 不会覆盖限制上传图片数量（也就是count参数生效），notli默认false -->
-			<sunui-upimg :upImgConfig="upImgConfig" @onUpImg="upImgData" ref="uImage" />
-			<button type="primary" @tap="getUpImgInfo">获取上传图片信息</button>
+			<!-- 			<sunui-upimg :upImgConfig="upImgConfig" @onUpImg="upImgData" ref="uImage" />
+			<button type="primary" @tap="getUpImgInfo">获取上传图片信息</button> -->
 
 			<sunui-upbasic :upImgConfig="upImgBasic" @onUpImg="upBasicData"></sunui-upbasic>
 			<button type="primary" @tap="getUpImgInfoBasic">获取上传Basic图片信息</button>
@@ -29,35 +28,48 @@
 				imgArr: [],
 				oosArr: [],
 				qiniuArr: [],
+				cosArr: [],
+				upImgCos: {
+					cosConfig: {
+						Bucket: 'test-1256264554', //replace with yours
+						Region: 'ap-shanghai', //replace with yours
+						SecretId: 'AKID32qSZjlaJqERTJriDb5AAat3c6TfPR7', //replace with yours
+						SecretKey: 'AGKtOitGco5crbGm7GHZntpgfgdXVL0' //replace with yours
+					}
+				},
 				// 七牛云相关配置
 				upImgQiniu: {
 					qiniuConfig: {
 						region: 'SCN',
 						uptokenURL: 'wuqiangxi',
-						uptoken: 'Ycs3ADclVWZAWvqdocpkr2i3oEHtg_LSJSFOBl2E:JD3xxMz6rwNKiVS2bDnA8Bkvgd0=:eyJzY29wZSI6Ind1cWlhbmd4aSIsImRlYWRsaW5lIjoxNTU3MTMyNjE3LCJ1cEhvc3RzIjpbImh0dHA6XC9cL3VwLXoyLnFpbml1LmNvbSIsImh0dHA6XC9cL3VwbG9hZC16Mi5xaW5pdS5jb20iLCItSCB1cC16Mi5xaW5pdS5jb20gaHR0cDpcL1wvMTQuMTUyLjM3LjQiXX0=',
+						uptoken: 'Ycs3ADclVWZAWvqdocpkr2i3oEHtg_LSJSFOBl2E:ByonLMLAXxIoBAp943dIwieET-E=:eyJzY29wZSI6Ind1cWlhbmd4aSIsImRlYWRsaW5lIjoxNTU3MjA1NzA1LCJ1cEhvc3RzIjpbImh0dHA6XC9cL3VwLXoyLnFpbml1LmNvbSIsImh0dHA6XC9cL3VwbG9hZC16Mi5xaW5pdS5jb20iLCItSCB1cC16Mi5xaW5pdS5jb20gaHR0cDpcL1wvMTQuMTUyLjM3LjQiXX0=',
 						domain: 'wpx.weijuyunke.cn',
 						shouldUseQiniuFileName: false,
 						fileHead: 'file',
 						key: (new Date()).getTime()
 					},
+					// 是否开启提示(提醒上传)
+					tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
 					count: 2,
-					// 过滤图片容量大于或等于3M的图片(2019/4/11新增)
-					maxsize: 1,
 					// 相机来源([相机,相册],[相机])
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
 					// 新增上传背景修改
 					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改
+					// 新增上传icon图标颜色修改(仅限于iconfont)
 					iconColor: '#fff',
 					// 上传文字描述(仅限四个字)
-					text: '上传图片',
+					text: '上传照片',
+					// 是否显示添加图片
+					isAddImage: true,
+					// 是否显示删除图标
+					isDelIcon: true,
 					// 删除图标定义背景颜色
-					delIconColor: '',
+					delIconColor: '#f00',
 					// 删除图标字体颜色
 					delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
@@ -76,6 +88,8 @@
 						url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/',
 						// 是否阿里云oos,true启用;false使用basicConfig.url(也就是公司后端提供的接口)
 					},
+					// 是否开启提示(提醒上传)
+					tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
@@ -86,10 +100,14 @@
 					sizeType: true,
 					// 新增上传背景修改
 					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改
+					// 新增上传icon图标颜色修改(仅限于iconfont)
 					iconColor: '#fff',
 					// 上传文字描述(仅限四个字)
 					text: '上传图片',
+					// 是否显示删除图标
+					isDelIcon: true,
+					// 是否显示添加图片
+					isAddImage: true,
 					// 删除图标定义背景颜色
 					delIconColor: '',
 					// 删除图标字体颜色
@@ -103,6 +121,8 @@
 					basicConfig: {
 						url: 'https://p.dns06.net.cn/index.php?m=Api&c=index&a=upload'
 					},
+					// 是否开启提示(提醒上传)
+					tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
@@ -113,8 +133,12 @@
 					sizeType: true,
 					// 新增上传背景修改
 					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改
+					// 新增上传icon图标颜色修改(仅限于iconfont)
 					iconColor: '#fff',
+					// 是否显示删除图标
+					isDelIcon: true,
+					// 是否显示添加图片
+					isAddImage: true,
 					// 上传文字描述(仅限四个字)
 					text: '上传图片',
 					// 删除图标定义背景颜色
@@ -176,16 +200,56 @@
 				}
 			};
 		},
+		onLoad() {
+			uni.request({
+				url: 'https://a1.dns06.net.cn/app/index.php?i=2&c=entry&a=wxapp&do=Upload_qiniu&m=yyf_company',
+				method: 'POST',
+				data: {},
+				success: res => {
+					console.log(res)
+					// 七牛云相关配置
+					this.upImgQiniu = {
+						qiniuConfig: {
+							region: 'SCN',
+							uptokenURL: 'wuqiangxi',
+							uptoken: res.data.info.token,
+							domain: 'wpx.weijuyunke.cn',
+							shouldUseQiniuFileName: false,
+							fileHead: 'file',
+							key: (new Date()).getTime()
+						},
+						// 是否开启提示(提醒上传)
+						tips: false,
+						// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
+						notli: false,
+						// 图片数量
+						count: 2,
+						// 相机来源([相机,相册],[相机])
+						sourceType: true,
+						// 是否压缩上传照片(仅小程序生效)
+						sizeType: true,
+						// 新增上传背景修改
+						bgColor: '#0089FC',
+						// 新增上传icon图标颜色修改
+						iconColor: '#fff',
+						// 上传文字描述(仅限四个字)
+						text: '上传图片',
+						// 删除图标定义背景颜色
+						delIconColor: '',
+						// 删除图标字体颜色
+						delIconText: '',
+						// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
+						iconReplace: ''
+					}
+				},
+				fail: () => {},
+				complete: () => {}
+			});
+		},
 		methods: {
 			// 删除图片
-			async delImgInfo(e){
-				console.log('你删除的图片地址为:',e);
-			},
-			// 图片预览
-			async prievwImage(){
-				uni.previewImage({
-					urls: ['https://www.playsort.cn/qqqb.png']
-				});
+			async delImgInfo(e) {
+				console.log('你删除的图片地址为:', e);
 			},
 			// 上传图片(2019/3/29新增) -> 手动上传(需要传入上传url,还需要搭配count参数使用!)
 			// 			uImageTap() {

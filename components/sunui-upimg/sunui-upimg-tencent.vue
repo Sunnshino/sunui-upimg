@@ -5,13 +5,11 @@
 				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
 				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
-				<text class='del' @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor"
-				 :hidden="!upImgConfig.isDelIcon">×</text>
+				<text class='del' @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor" :hidden="!upImgConfig.isDelIcon">×</text>
 			</view>
 			<view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-if="upImgConfig.iconReplace =='' || upImgConfig.iconReplace==undefined">
-					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''"
-					 v-show="upImgConfig.isAddImage">
+					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''">
 						<view class="icon-addicon"></view>
 						<view class="icon-text" :style="'color:'+upImgConfig.iconColor+';width:100%;'">{{upImgConfig.text}}</view>
 					</view>
@@ -27,16 +25,11 @@
 </template>
 
 <script>
-	const env = require('./ali-oos/config.js'); //配置文件，在这文件里配置你的OSS keyId和KeySecret,timeout:87600;
-	const base64 = require('./ali-oos/base64.js'); //Base64,hmac,sha1,crypto相关算法
-	require('./ali-oos/hmac.js');
-	require('./ali-oos/sha1.js');
-	const Crypto = require('./ali-oos/crypto.js');
+	const COS = require('./tencent-cos/cos-wx-sdk-v5.js');
 	// #ifdef APP-PLUS
 	const compressImage = require('../common/sunui-upimg-util.js'); //引入这位小伙伴的工具集:http://ext.dcloud.net.cn/plugin?id=341
 	const device = uni.getSystemInfoSync();
 	// #endif
-
 	export default {
 		data() {
 			return {
@@ -69,26 +62,98 @@
 		}
 
 	}
-	const getPolicyBase64 = () => {
-		let date = new Date();
-		date.setHours(date.getHours() + env.timeout);
-		let srcT = date.toISOString();
-		const policyText = {
-			"expiration": srcT,
-			"conditions": [
-				["content-length-range", 0, 5 * 1024 * 1024] //上传容量最大为5M
-			]
-		};
-		const policyBase64 = base64.encode(JSON.stringify(policyText));
-		return policyBase64;
-	}
-	const getSignature = (_this, policyBase64) => {
-		const accesskey = _this.upImgConfig.aliConfig.AccessKeySecret || env.AccessKeySecret;
-		const bytes = Crypto.HMAC(Crypto.SHA1, policyBase64, accesskey, {
-			asBytes: true
+
+	// 上传文件
+	const upload_file_server = async (_this, configs, upload_picture_list, j) => {
+
+		// 腾讯云配置
+		let cosConfig = {
+			Bucket: configs.Bucket,
+			Region: configs.Region,
+			SecretId: configs.SecretId,
+			SecretKey: configs.SecretKey
+		}
+
+		let cos = new COS({
+			getAuthorization: (params, callback) => { //获取签名 必填参数
+				let authorization = COS.getAuthorization({
+					SecretId: cosConfig.SecretId,
+					SecretKey: cosConfig.SecretKey,
+					Method: params.Method,
+					Key: params.Key
+				});
+				callback(authorization);
+			}
 		});
-		const signature = Crypto.util.bytesToBase64(bytes);
-		return signature;
+
+
+		// 腾讯云v5上传出错信息
+		const requestCallback = (err, data) => {
+			if (err && err.error) {
+				uni.showModal({
+					title: '返回错误',
+					content: '请求失败：' + err.error.Message + '；状态码：' + err.statusCode,
+					showCancel: false
+				});
+			} else if (err) {
+				uni.showModal({
+					title: '请求出错',
+					content: '请求出错：' + err + '；状态码：' + err.statusCode,
+					showCancel: false
+				});
+			} else {
+				uni.showToast({
+					title: '请求成功',
+					icon: 'success',
+					duration: 3000
+				});
+			}
+		};
+
+		cos.postObject({
+			Bucket: cosConfig.Bucket,
+			Region: cosConfig.Region,
+			Key: new Date().getTime() + Math.floor(Math.random() * 150),
+			FilePath: upload_picture_list[j]['path'],
+			onProgress: (info) => {
+				console.log(JSON.stringify(info));
+			}
+		}, requestCallback);
+
+		// 		const upload_task = await uni.uploadFile({
+		// 			url: basicConfig.url,
+		// 			filePath: upload_picture_list[j]['path'],
+		// 			name: 'file',
+		// 			formData: {},
+		// 			async success(res) {
+		// 				if (res.statusCode == 200) {
+		// 					let data = JSON.parse(res.data);
+		// 					console.log('打印后端反馈的信息:', data);
+		// 					// 先获取图片url(各个后端返回值不一，所以造成出入)
+		// 					// 修改获取的图片返回值路径
+		// 					// 提示：data.info改为你图片返回地址即可
+		// 					upload_picture_list[j]['path_server'] = data.info; //修改返回图片地址即可(2019/05/06) => 无论是腾讯云还是阿里云或者其它(只要返回图片地址以及引入对应的js文件进行一些配置即可扩展本插件)
+		// 					_this.upload_picture_list = upload_picture_list;
+		// 					await _this.$emit('onUpImg', _this.upload_picture_list);
+		// 					uni.hideLoading();
+		// 				}
+		// 			},
+		// 			async fail(err) {
+		// 				uni.showLoading({
+		// 					title: `上传失败!`
+		// 				})
+		// 				setTimeout(() => {
+		// 					uni.hideLoading();
+		// 				}, 2000)
+		// 				console.log(err)
+		// 			}
+		// 		});
+		// 		upload_task.onProgressUpdate(async (res) => {
+		// 			for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
+		// 				upload_picture_list[i]['upload_percent'] = await res.progress;
+		// 			}
+		// 			_this.upload_picture_list = upload_picture_list
+		// 		});
 	}
 
 	const compressImageHandler = async (src) => {
@@ -98,78 +163,10 @@
 		return tempPath;
 	}
 
-	// 上传文件
-	const upload_file_server = async (_this, configs, upload_picture_list, j) => {
-		let aliConfig = {
-			aliyunFileKey: `${configs.aliConfig.oosDirectory}/` + new Date().getTime() + Math.floor(Math.random() *
-					150) +
-				'.png',
-			aliyunServerURL: configs.aliConfig.url,
-			accessid: configs.aliConfig.OSSAccessKeyId,
-			url: configs.aliConfig.url || "",
-			oos: configs.aliConfig.oos || false
-		}
-
-		const aliyunFileKey = aliConfig.aliyunFileKey ? aliConfig.aliyunFileKey : "";
-		const aliyunServerURL = aliConfig.aliyunServerURL ? aliConfig.aliyunServerURL : "";
-		const accessid = aliConfig.accessid ? aliConfig.accessid : "";
-		const policyBase64 = getPolicyBase64();
-		const signature = getSignature(_this, policyBase64);
-
-
-		const upload_task = await uni.uploadFile({
-			url: aliConfig.url,
-			filePath: upload_picture_list[j]['path'],
-			name: 'file',
-			formData: {
-				'key': aliyunFileKey,
-				'policy': policyBase64,
-				'OSSAccessKeyId': accessid,
-				'signature': signature,
-				'success_action_status': '200',
-			},
-			async success(res) {
-				if (res.statusCode == 200) {
-					// console.log('打印后端反馈的信息:',data);
-					// 先获取图片url(各个后端返回值不一，所以造成出入)
-					// 修改获取的图片返回值路径
-					// 提示：data.info改为你图片返回地址即可
-					let filename = aliyunServerURL + aliyunFileKey;
-					upload_picture_list[j]['path_server'] = filename;
-					_this.upload_picture_list = upload_picture_list;
-					await _this.$emit('onUpImg', _this.upload_picture_list);
-					uni.hideLoading();
-				} else {
-					uni.showLoading({
-						title: `上传失败!`
-					});
-					setTimeout(() => {
-						uni.hideLoading();
-					}, 2000);
-					_this.upload_picture_list = [];
-					console.warn(`阿里云上传图片失败,返回状态码:`, res.statusCode);
-				}
-			},
-			async fail(err) {
-				uni.showLoading({
-					title: `上传失败!`
-				});
-				setTimeout(() => {
-					uni.hideLoading();
-				}, 2000);
-				console.log(err);
-			}
-		});
-		upload_task.onProgressUpdate(async (res) => {
-			for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
-				upload_picture_list[i]['upload_percent'] = await res.progress;
-			}
-			_this.upload_picture_list = upload_picture_list
-		});
-	}
 
 	// 上传图片(通用)
 	const uImage = async (_this, config) => {
+		console.log('URL:', config);
 		for (let j = 0, len = _this.upload_picture_list.length; j < len; j++) {
 			if (_this.upload_picture_list[j]['upload_percent'] == 0) {
 				await upload_file_server(_this, config, _this.upload_picture_list, j)
@@ -187,21 +184,17 @@
 		_this.upload_picture_list = _this.upload_picture_list;
 	}
 
-
 	// 选择图片(通用)
 	const cImage = (_this, count, configs) => {
 		let config = {
-			aliConfig: {
-				AccessKeySecret: configs.aliConfig.AccessKeySecret,
-				OSSAccessKeyId: configs.aliConfig.OSSAccessKeyId,
-				oosDirectory: configs.aliConfig.oosDirectory,
-				url: configs.aliConfig.url
+			basicConfig: {
+				url: configs.basicConfig.url
 			},
 			count,
-			tips: configs.tips || false,
 			notli: configs.notli,
 			sourceType: configs.sourceType,
-			sizeType: configs.sizeType
+			sizeType: configs.sizeType,
+			tips: configs.tips || false
 		}
 		uni.chooseImage({
 			count: config.notli ? config.count = 9 : _this.upload_after_list.length == 0 ? config.count : config.count -
@@ -210,12 +203,12 @@
 			sourceType: config.sourceType ? ['album', 'camera'] : ['camera'],
 			success: async (res) => {
 				for (let i = 0, len = res.tempFiles.length; i < len; i++) {
+					res.tempFiles[i]['upload_percent'] = 0;
+					res.tempFiles[i]['path_server'] = '';
 					// #ifdef APP-PLUS
 					const src = await compressImageHandler(res.tempFilePaths[i]);
 					_this.upload_picture_list.push(src);
 					// #endif
-					res.tempFiles[i]['upload_percent'] = 0;
-					res.tempFiles[i]['path_server'] = '';
 					_this.upload_picture_list.push(res.tempFiles[i]);
 					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(
 						0,
@@ -227,8 +220,7 @@
 						`color:#f00;font-weight:bold;`) : console.log(
 						`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${config.count}`, `color:#f00;font-weight:bold;`);
 				}
-				_this.upload_after_list = _this.upload_after_list.concat(
-					res.tempFilePaths).slice(0, config.count);
+				_this.upload_after_list = _this.upload_after_list.concat(res.tempFilePaths).slice(0, config.count);
 				_this.upload_picture_list = _this.upload_picture_list.slice(0, config.count);
 			}
 		})
@@ -258,6 +250,7 @@
 		})
 	}
 </script>
+
 
 <style scoped>
 	/* 

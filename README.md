@@ -1,20 +1,19 @@
 >**upimg for uniApp**  
->**如无法按照预期运行,请star并且watch本项目,以便得到最新的UI('_')**   
->**如上传以后,出现错误(非CORS/CORB),就去修改图片返回地址,在文件sunui-upimg：171行**  
+>**请star并且watch本项目,以便得到最新的UI('_')**   
+>**推荐测试运行环境小程序开发者工具,避免出现CORS/CORB**  
+>**如上传以后,出现错误(非CORS/CORB),就去修改图片返回地址,在各个插件版本有注释**  
 
 ---------------------
 
-### 后期计划
-- 增强稳定性以及提供错误提示
-
-
 ### 分离源码(集成版70k、后端版10k、阿里云版12k、七牛云版11k)
-- sunui-upimg.vue(集成版),一般用于测试新型功能以及注释.
+- sunui-upimg.vue(集成版),暂不提供更新.
 - sunui-upimg-basic.vue(后端版),极易扩展
 - sunui-upimg-alioos.vue(阿里云版),需要复制文件夹“ali-oos”
 - sunui-upimg-qiniu.vue(七牛云版),需要复制文件夹“qiniu”
+- sunui-sunui-upimg-tencent(腾讯云版),需要复制文件夹“tencent-cos”(**暂时不可用,请勿使用!!!**)
 
 ---------------------
+
 ### 现阶段支持功能如下
 - 图片上传前预览
 - 图片上传后预览
@@ -28,23 +27,39 @@
 - 支持图片上传容量控制,单位为M,向上取整(暂时关闭该功能)
 - 支持七牛云图片上传
 
-
-### 开始考虑支持以下功能
-- App上传任意图片数量
+---------------------
 
 
 ### 新增功能
-- 支持手动上传图片(2019/3/29)
-- 新增七牛云图片上传支持(2019/05/05)
+- 支持手动上传图片 --2019/03/28
+- 新增七牛云图片上传支持 --2019/05/05
+- 新增隐藏删除图标 --2019/05/08
 
-### 针对修改iconfont做出的回答(2.0已简化)
-- 其实插件本身仅仅只有几k,但字体图标已经高达**50k**(可想而知性能消耗).
-- svg仅仅只有几k;容量非常小,且支持性也非常好,能完爆字体图标(特别适用于app).
-- svg支持多色彩渲染,而字体图标不行(就单一的那种颜色).
+---------------------
+### BUG以及更改
+- 上传图片组件progress进度条bug修改
+- 上传图片组件内进行注释修改
+- 上传图片组件已支持阿里云oos
+- 更改上传对象配置项
+- 修改选择图片bug以及选择数量限制(仅小程序、App端、h5不限制选择数量但已做处理)
+- iconfont图标对比svg性能以及实用性来说,下个版本会使用svg --2019/05/05
+- 2.0版本已使用svg图标,如使用iconfont,可参考sunui-upimg.vue
+- 下版本2.1增强稳定性以及错误提示 -- 2019/05/06
+- 修复未上传图片预览,增加预览前图片提示(sunui-upimg.vue) --2019/05/06
+- 修复App上传后旋转90°(等待测试),引入(http://ext.dcloud.net.cn/plugin?id=341)  h5待修复;sunui-upimg.vue暂时停止更新,而后增注释版 --2019/05/08
+- 尽量使用微信开发者工具测试,(阿里云、七牛云、后端)测试提供的接口尽量选择小容量图片,只要参数引入正确就OK --2019/05/08
+- 优化一些样式,增加些注释;譬如上传身份证模板改造一下样式即可使用 --2019/05/08
+- 通过配置参数(isDelIcon:true/false)可动态显示/隐藏删除按钮 --2019/05/08
+- 通过配置参数(isAddImage:true/false)可动态显示/隐藏添加图片图标 --2019/05/08
+- 腾讯云云存储未使用过,所以暂时不可用 --2019/05/08
+- 优化七牛云和阿里云以及上传失败后置空,并打印一些错误信息 --2019/05/08
 
+---------------------
 
-### 未测试BUG
-- h5端可能不支持获取图片信息api,注释了相关代码.
+### 后期计划
+- 增强稳定性以及提供错误提示
+- 解决h5预览图片旋转90°问题
+- 增加腾讯云上传图片插件
 
 
 ### 使用Step1(导入main.js,)=>导入组件这一步可以参考：http://ask.dcloud.net.cn/article/35409
@@ -60,14 +75,14 @@
 	<view>
 		<view>
 			<!-- 不会覆盖限制上传图片数量（也就是count参数生效），notli默认false -->
-			<sunui-upimg :upImgConfig="upImgConfig" @onUpImg="upImgData" ref="uImage" />
-			<button type="primary" @tap="getUpImgInfo">获取上传图片信息</button>
+			<!-- 			<sunui-upimg :upImgConfig="upImgConfig" @onUpImg="upImgData" ref="uImage" />
+			<button type="primary" @tap="getUpImgInfo">获取上传图片信息</button> -->
 
 			<sunui-upbasic :upImgConfig="upImgBasic" @onUpImg="upBasicData"></sunui-upbasic>
 			<button type="primary" @tap="getUpImgInfoBasic">获取上传Basic图片信息</button>
 
 
-			<sunui-upoos :upImgConfig="upImgOos" @onUpImg="upOosData"></sunui-upoos>
+			<sunui-upoos :upImgConfig="upImgOos" @onUpImg="upOosData" @onImgDel="delImgInfo"></sunui-upoos>
 			<button type="primary" @tap="getUpImgInfoOos">获取上传Oos图片信息</button>
 
 			<sunui-upqiniu :upImgConfig="upImgQiniu" @onUpImg="upQiniuData"></sunui-upqiniu>
@@ -91,30 +106,30 @@
 					qiniuConfig: {
 						region: 'SCN',
 						uptokenURL: 'wuqiangxi',
-						uptoken: 'Ycs3ADclVWZAWvqdocpkr2i3oEHtg_LSJSFOBl2E:JD3xxMz6rwNKiVS2bDnA8Bkvgd0=:eyJzY29wZSI6Ind1cWlhbmd4aSIsImRlYWRsaW5lIjoxNTU3MTMyNjE3LCJ1cEhvc3RzIjpbImh0dHA6XC9cL3VwLXoyLnFpbml1LmNvbSIsImh0dHA6XC9cL3VwbG9hZC16Mi5xaW5pdS5jb20iLCItSCB1cC16Mi5xaW5pdS5jb20gaHR0cDpcL1wvMTQuMTUyLjM3LjQiXX0=',
+						uptoken: 'Ycs3ADclVWZAWvqdocpkr2i3oEHtg_LSJSFOBl2E:ByonLMLAXxIoBAp943dIwieET-E=:eyJzY29wZSI6Ind1cWlhbmd4aSIsImRlYWRsaW5lIjoxNTU3MjA1NzA1LCJ1cEhvc3RzIjpbImh0dHA6XC9cL3VwLXoyLnFpbml1LmNvbSIsImh0dHA6XC9cL3VwbG9hZC16Mi5xaW5pdS5jb20iLCItSCB1cC16Mi5xaW5pdS5jb20gaHR0cDpcL1wvMTQuMTUyLjM3LjQiXX0=',
 						domain: 'wpx.weijuyunke.cn',
 						shouldUseQiniuFileName: false,
 						fileHead: 'file',
 						key: (new Date()).getTime()
 					},
+					// 是否开启提示(提醒上传)
+					tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
 					count: 2,
-					// 过滤图片容量大于或等于3M的图片(2019/4/11新增)
-					maxsize: 1,
 					// 相机来源([相机,相册],[相机])
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
 					// 新增上传背景修改
 					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改
+					// 新增上传icon图标颜色修改(仅限于iconfont)
 					iconColor: '#fff',
 					// 上传文字描述(仅限四个字)
-					text: '上传图片',
+					text: '上传照片',
 					// 删除图标定义背景颜色
-					delIconColor: '',
+					delIconColor: '#f00',
 					// 删除图标字体颜色
 					delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
@@ -133,17 +148,19 @@
 						url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/',
 						// 是否阿里云oos,true启用;false使用basicConfig.url(也就是公司后端提供的接口)
 					},
+					// 是否开启提示(提醒上传)
+					tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
-					count: 2,
+					count: 1,
 					// 相机来源([相机,相册],[相机])
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
 					// 新增上传背景修改
 					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改
+					// 新增上传icon图标颜色修改(仅限于iconfont)
 					iconColor: '#fff',
 					// 上传文字描述(仅限四个字)
 					text: '上传图片',
@@ -160,6 +177,8 @@
 					basicConfig: {
 						url: 'https://p.dns06.net.cn/index.php?m=Api&c=index&a=upload'
 					},
+					// 是否开启提示(提醒上传)
+					tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
@@ -170,7 +189,7 @@
 					sizeType: true,
 					// 新增上传背景修改
 					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改
+					// 新增上传icon图标颜色修改(仅限于iconfont)
 					iconColor: '#fff',
 					// 上传文字描述(仅限四个字)
 					text: '上传图片',
@@ -233,18 +252,69 @@
 				}
 			};
 		},
+		onLoad() {
+			uni.request({
+				url: 'https://a1.dns06.net.cn/app/index.php?i=2&c=entry&a=wxapp&do=Upload_qiniu&m=yyf_company',
+				method: 'POST',
+				data: {},
+				success: res => {
+					console.log(res)
+					// 七牛云相关配置
+					this.upImgQiniu = {
+						qiniuConfig: {
+							region: 'SCN',
+							uptokenURL: 'wuqiangxi',
+							uptoken: res.data.info.token,
+							domain: 'wpx.weijuyunke.cn',
+							shouldUseQiniuFileName: false,
+							fileHead: 'file',
+							key: (new Date()).getTime()
+						},
+						// 是否开启提示(提醒上传)
+						tips: false,
+						// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
+						notli: false,
+						// 图片数量
+						count: 2,
+						// 相机来源([相机,相册],[相机])
+						sourceType: true,
+						// 是否压缩上传照片(仅小程序生效)
+						sizeType: true,
+						// 新增上传背景修改
+						bgColor: '#0089FC',
+						// 新增上传icon图标颜色修改
+						iconColor: '#fff',
+						// 上传文字描述(仅限四个字)
+						text: '上传图片',
+						// 删除图标定义背景颜色
+						delIconColor: '',
+						// 删除图标字体颜色
+						delIconText: '',
+						// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
+						iconReplace: ''
+					}
+				},
+				fail: () => {},
+				complete: () => {}
+			});
+		},
 		methods: {
+			// 删除图片
+			async delImgInfo(e) {
+				console.log('你删除的图片地址为:', e);
+			},
 			// 上传图片(2019/3/29新增) -> 手动上传(需要传入上传url,还需要搭配count参数使用!)
 			// 			uImageTap() {
 			// 				this.$refs.uImage.uploadimage('http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/');
 			// 			},
-			
+
 			// 七牛云
 			async upQiniuData(e) {
 				// 上传图片数组
 				let arrImg = [];
 				for (let i = 0, len = e.length; i < len; i++) {
 					try {
+						// let reg = /([^\s]+(?=\.(jpg|png|gif))\.\2)/gi;
 						if (e[i].path_server != "") {
 							await arrImg.push(e[i].path_server.split(','));
 						}
@@ -365,18 +435,8 @@
 
 </style>
 
-
 ```
 
-### BUG以及更改
-- 上传图片组件progress进度条bug修改
-- 上传图片组件内进行注释修改
-- 上传图片组件已支持阿里云oos
-- 更改上传对象配置项
-- 修改选择图片bug以及选择数量限制(仅小程序、App端、h5不限制选择数量但已做处理)
-- iconfont图标性能以及实用性来说,下个版本会使用svg(2019/05/05)
-- 下版本2.1增强稳定性以及错误提示(2019/05/06)
-- 修复未上传图片预览(2019/05/06),增加预览前图片提示(sunui-upimg.vue)
 
 
 ##### *其它待开发...*
