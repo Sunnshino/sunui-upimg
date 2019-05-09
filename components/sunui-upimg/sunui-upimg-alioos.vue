@@ -17,7 +17,7 @@
 					</view>
 				</view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-else>
-					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'">
+					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'" v-show="upImgConfig.isAddImage">
 						<image :src="upImgConfig.iconReplace" class="icon_replace"></image>
 					</view>
 				</view>
@@ -147,6 +147,7 @@
 						uni.hideLoading();
 					}, 2000);
 					_this.upload_picture_list = [];
+					_this.upload_after_list=[];
 					console.warn(`阿里云上传图片失败,返回状态码:`, res.statusCode);
 				}
 			},
@@ -210,13 +211,15 @@
 			sourceType: config.sourceType ? ['album', 'camera'] : ['camera'],
 			success: async (res) => {
 				for (let i = 0, len = res.tempFiles.length; i < len; i++) {
+					res.tempFiles[i]['upload_percent'] = 0;
+					res.tempFiles[i]['path_server'] = '';
 					// #ifdef APP-PLUS
 					const src = await compressImageHandler(res.tempFilePaths[i]);
 					_this.upload_picture_list.push(src);
 					// #endif
-					res.tempFiles[i]['upload_percent'] = 0;
-					res.tempFiles[i]['path_server'] = '';
+					// #ifndef APP-PLUS
 					_this.upload_picture_list.push(res.tempFiles[i]);
+					// #endif
 					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(
 						0,
 						config.count) : '';
@@ -250,7 +253,9 @@
 			const src = await compressImageHandler(_this.upload_picture_list[i].path);
 			cacheImg.push(src);
 			// #endif
+			// #ifndef APP-PLUS
 			cacheImg.push(_this.upload_picture_list[i].path);
+			// #endif
 		}
 		uni.previewImage({
 			current: cacheImg[e.currentTarget.dataset.idx],

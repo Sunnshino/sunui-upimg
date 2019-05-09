@@ -10,13 +10,13 @@
 			</view>
 			<view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-if="upImgConfig.iconReplace =='' || upImgConfig.iconReplace==undefined">
-					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''">
+					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''" v-show="upImgConfig.isAddImage">
 						<view class="icon-addicon"></view>
 						<view class="icon-text" :style="'color:'+upImgConfig.iconColor+';width:100%;'">{{upImgConfig.text}}</view>
 					</view>
 				</view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-else>
-					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'">
+					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'" v-show="upImgConfig.isAddImage">
 						<image :src="upImgConfig.iconReplace" class="icon_replace"></image>
 					</view>
 				</view>
@@ -85,6 +85,8 @@
 						icon: 'none'
 					});
 					_this.upload_picture_list = [];
+					_this.upload_after_list=[];
+					console.warn('七牛云上传图片失败,错误信息:',res.error);
 					return;
 				}
 				upload_picture_list[j]['path_server'] = `http://${res.fileUrl}`;
@@ -179,7 +181,9 @@
 					const src = await compressImageHandler(res.tempFilePaths[i]);
 					_this.upload_picture_list.push(src);
 					// #endif
+					// #ifndef APP-PLUS
 					_this.upload_picture_list.push(res.tempFiles[i]);
+					// #endif
 					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(
 						0,
 						config.count) : '';
@@ -214,7 +218,9 @@
 			const src = await compressImageHandler(_this.upload_picture_list[i].path);
 			cacheImg.push(src);
 			// #endif
+			// #ifndef APP-PLUS
 			cacheImg.push(_this.upload_picture_list[i].path);
+			// #endif
 		}
 		uni.previewImage({
 			current: cacheImg[e.currentTarget.dataset.idx],
