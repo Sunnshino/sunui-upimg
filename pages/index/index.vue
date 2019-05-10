@@ -1,10 +1,10 @@
 <template>
 	<view>
 		<view>
-			
+
 			<sunui-upbasic :upImgConfig="upImgBasic" @onUpImg="upBasicData"></sunui-upbasic>
 			<button type="primary" @tap="getUpImgInfoBasic">获取上传Basic图片信息</button>
-			
+
 			<sunui-upoos :upImgConfig="upImgOos" @onUpImg="upOosData" @onImgDel="delImgInfo"></sunui-upoos>
 			<button type="primary" @tap="getUpImgInfoOos">获取上传Oos图片信息</button>
 
@@ -59,12 +59,14 @@
 					iconColor: '#fff',
 					// 上传文字描述(仅限四个字)
 					text: '上传照片',
+					// 删除按钮位置(left,right,bleft,bright),默认右上角
+					iconLocation: 'bright',
 					// 是否显示添加图片
 					isAddImage: true,
 					// 是否显示删除图标
 					isDelIcon: true,
 					// 删除图标定义背景颜色
-					delIconColor: '#f00',
+					delIconColor: '',
 					// 删除图标字体颜色
 					delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
@@ -103,6 +105,8 @@
 					isDelIcon: true,
 					// 是否显示添加图片
 					isAddImage: true,
+					// 删除按钮位置(left,right,bleft,bright),默认右上角
+					iconLocation: 'left',
 					// 删除图标定义背景颜色
 					delIconColor: '',
 					// 删除图标字体颜色
@@ -134,12 +138,14 @@
 					isDelIcon: true,
 					// 是否显示添加图片
 					isAddImage: true,
+					// 删除按钮位置(left,right,bleft,bright),默认右上角
+					iconLocation: 'right',
 					// 上传文字描述(仅限四个字)
 					text: '上传图片',
 					// 删除图标定义背景颜色
-					delIconColor: '',
+					delIconColor: '#eee',
 					// 删除图标字体颜色
-					delIconText: '',
+					delIconText: '#000',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
 					iconReplace: ''
 				}
@@ -155,15 +161,15 @@
 					// 七牛云相关配置
 					this.upImgQiniu = {
 						qiniuConfig: {
-							region: 'SCN',
-							uptokenURL: 'wuqiangxi',
+							region: res.data.info.area,
+							uptokenURL: res.data.info.bucket,
 							uptoken: res.data.info.token,
-							domain: 'wpx.weijuyunke.cn',
+							domain: res.data.info.url,
 							shouldUseQiniuFileName: false,
 							fileHead: 'file',
 							key: (new Date()).getTime()
 						},
-						// 是否开启提示(提醒上传)
+							// 是否开启提示(提醒上传)
 						tips: false,
 						// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 						notli: false,
@@ -175,8 +181,14 @@
 						sizeType: true,
 						// 新增上传背景修改
 						bgColor: '#0089FC',
-						// 新增上传icon图标颜色修改
+						// 新增上传icon图标颜色修改(仅限于iconfont)
 						iconColor: '#fff',
+						// 是否显示删除图标
+						isDelIcon: true,
+						// 是否显示添加图片
+						isAddImage: true,
+						// 删除按钮位置(left,right,bleft,bright),默认右上角
+						iconLocation: '',
 						// 上传文字描述(仅限四个字)
 						text: '上传图片',
 						// 删除图标定义背景颜色

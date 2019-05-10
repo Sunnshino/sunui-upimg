@@ -5,16 +5,20 @@
 				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
 				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
-				<text class='del' @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor"
+				<text class='del' :class="upImgConfig.iconLocation=='left'?'left':upImgConfig.iconLocation=='right'?'right':upImgConfig.iconLocation=='bleft'?'bleft':upImgConfig.iconLocation=='bright'?'bright':'right'"
+				 @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor"
 				 :hidden="!upImgConfig.isDelIcon">×</text>
 			</view>
 			<view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-if="upImgConfig.iconReplace =='' || upImgConfig.iconReplace==undefined">
-					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''" v-show="upImgConfig.isAddImage">
+					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''"
+					 v-show="upImgConfig.isAddImage">
+					 <!-- 这里可以改为字体图标/iconfont -->
 						<view class="icon-addicon"></view>
 						<view class="icon-text" :style="'color:'+upImgConfig.iconColor+';width:100%;'">{{upImgConfig.text}}</view>
 					</view>
 				</view>
+				
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-else>
 					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'" v-show="upImgConfig.isAddImage">
 						<image :src="upImgConfig.iconReplace" class="icon_replace"></image>
@@ -35,7 +39,7 @@
 		data() {
 			return {
 				upload_after_list: [],
-				upload_picture_list: [],
+				upload_picture_list: []
 			};
 		},
 		name: 'sunui-upimg',
@@ -85,8 +89,8 @@
 						icon: 'none'
 					});
 					_this.upload_picture_list = [];
-					_this.upload_after_list=[];
-					console.warn('七牛云上传图片失败,错误信息:',res.error);
+					_this.upload_after_list = [];
+					console.warn('七牛云上传图片失败,错误信息:', res.error);
 					return;
 				}
 				upload_picture_list[j]['path_server'] = `http://${res.fileUrl}`;
@@ -252,12 +256,12 @@
 		background-position: center;
 		background-size: cover;
 	}
-
+	
 	.icon-text {
 		font-size: 28upx;
 		margin-top: -25%;
 	}
-
+	
 	/* 循环列表样式 */
 	.sunsin_picture_list {
 		width: 96%;
@@ -269,13 +273,13 @@
 		flex-direction: row;
 		justify-content: flex-start;
 	}
-
+	
 	.sunsin_picture_list image {
 		width: 40upx;
 		height: 40upx;
 		margin: 0 4%;
 	}
-
+	
 	/* 添加图片样式 */
 	.sunsin_add_image {
 		width: 160upx;
@@ -292,7 +296,7 @@
 		align-items: center;
 		flex-wrap: wrap;
 	}
-
+	
 	/* 预览图片 */
 	.sunsin_picture_item {
 		position: relative;
@@ -301,12 +305,10 @@
 		margin: 20upx;
 		margin-left: 0;
 	}
-
+	
 	/* 删除按钮样式 */
 	.sunsin_picture_item .del {
 		position: absolute;
-		top: 0;
-		right: -4.2%;
 		color: #fff;
 		border-radius: -4upx;
 		border-top-right-radius: 6upx;
@@ -317,7 +319,38 @@
 		text-align: center;
 		background-color: #E54D42;
 	}
-
+	
+	/* 删除图标位置(上左) */
+	.sunsin_picture_item .del.left {
+		top: 0;
+		left: 0;
+		margin-left: 4%;
+		border-top-right-radius: 0;
+		border-top-left-radius: 6upx;
+	}
+	
+	/* 删除图标位置(上右) */
+	.sunsin_picture_item .del.right {
+		top: 0;
+		right: -4.2%;
+	}
+	
+	/* 删除图标位置(下左) */
+	.sunsin_picture_item .del.bleft {
+		bottom: 0;
+		left: 4%;
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 6upx;
+	}
+	
+	/* 删除图标位置(下右) */
+	.sunsin_picture_item .del.bright {
+		right: -4.2%;
+		bottom: 0;
+		border-top-right-radius: 0;
+		border-top-left-radius: 6upx;
+	}
+	
 	/* 进度遮罩层样式 */
 	.sunsin_upload_progress {
 		font-size: 24upx;
@@ -334,7 +367,7 @@
 		border-radius: 8upx;
 		background-color: #000;
 	}
-
+	
 	/* 自定义添加图片样式 */
 	.sunsin_picture_item image {
 		width: 160upx;

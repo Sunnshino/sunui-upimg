@@ -5,13 +5,14 @@
 				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
 				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
-				<text class='del' @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor"
+				<text class='del' :class="upImgConfig.iconLocation=='left'?'left':upImgConfig.iconLocation=='right'?'right':upImgConfig.iconLocation=='bleft'?'bleft':upImgConfig.iconLocation=='bright'?'bright':'right'" @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor"
 				 :hidden="!upImgConfig.isDelIcon">×</text>
 			</view>
 			<view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-if="upImgConfig.iconReplace =='' || upImgConfig.iconReplace==undefined">
 					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''"
 					 v-show="upImgConfig.isAddImage">
+					 <!-- 这里可以改为字体图标/iconfont -->
 						<view class="icon-addicon"></view>
 						<view class="icon-text" :style="'color:'+upImgConfig.iconColor+';width:100%;'">{{upImgConfig.text}}</view>
 					</view>
@@ -41,7 +42,7 @@
 		data() {
 			return {
 				upload_after_list: [],
-				upload_picture_list: [],
+				upload_picture_list: []
 			};
 		},
 		name: 'sunui-upimg',
@@ -147,7 +148,7 @@
 						uni.hideLoading();
 					}, 2000);
 					_this.upload_picture_list = [];
-					_this.upload_after_list=[];
+					_this.upload_after_list = [];
 					console.warn(`阿里云上传图片失败,返回状态码:`, res.statusCode);
 				}
 			},
@@ -339,8 +340,6 @@
 	/* 删除按钮样式 */
 	.sunsin_picture_item .del {
 		position: absolute;
-		top: 0;
-		right: -4.2%;
 		color: #fff;
 		border-radius: -4upx;
 		border-top-right-radius: 6upx;
@@ -350,6 +349,37 @@
 		z-index: 2;
 		text-align: center;
 		background-color: #E54D42;
+	}
+
+	/* 删除图标位置(上左) */
+	.sunsin_picture_item .del.left {
+		top: 0;
+		left: 0;
+		margin-left: 4%;
+		border-top-right-radius: 0;
+		border-top-left-radius: 6upx;
+	}
+
+	/* 删除图标位置(上右) */
+	.sunsin_picture_item .del.right {
+		top: 0;
+		right: -4.2%;
+	}
+
+	/* 删除图标位置(下左) */
+	.sunsin_picture_item .del.bleft {
+		bottom: 0;
+		left: 4%;
+		border-top-left-radius: 0;
+		border-bottom-left-radius: 6upx;
+	}
+
+	/* 删除图标位置(下右) */
+	.sunsin_picture_item .del.bright {
+		right: -4.2%;
+		bottom: 0;
+		border-top-right-radius: 0;
+		border-top-left-radius: 6upx;
 	}
 
 	/* 进度遮罩层样式 */
