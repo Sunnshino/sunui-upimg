@@ -28,6 +28,7 @@
 - 支持单页面多复用(@onUpImg="xxxx")
 - 支持图片上传容量控制,单位为M,向上取整(暂时关闭该功能)
 - 支持七牛云图片上传
+- 支持手动上传(多谢**“手动党”**提出的建议->节约流量)
 
 ---------------------
 
@@ -36,6 +37,7 @@
 - 支持手动上传图片 --2019/03/28
 - 新增七牛云图片上传支持 --2019/05/05
 - 新增隐藏删除图标 --2019/05/08
+- 手动上传图片 --2019/05/10(小伙伴们注意了,**图片上传也不是那么快的**)
 
 ---------------------
 
@@ -84,7 +86,9 @@
 |v2.2(beta)	|2019/05/09		|**拍照逆转90°的原因是:ios/android竖屏拍照导致倾斜90°**,用兼容写法的话,代价太大(增加了很多代码容量,后续看情况兼容或者提供最简版本)	|
 |v2.21		|2019/05/09		|置空上传失败后的图片路径,因上传失败有很多种原因,所以就没有一一测试																	|
 |v2.22		|2019/05/10		|删除sunui-upimg.vue,更新使用文档																									|
-|v2.25		|2019/05/10		|可引入iconfont自定义删除图标,具体引入请查看sunui-upimg-basic																				|
+|v2.25		|2019/05/10		|可引入iconfont自定义删除图标,具体引入请查看sunui-upimg-basic																		|
+|v2.26		|2019/05/11		|可**手动(调用)上传图片**,具体查看阿里云上传示例,**注意配合count参数**使用; 注意看方法:**uImageTap**								|
+|v2.27		|2019/05/11		|修改配置文件,使其更加标准化、语义化																								|
 
 
 
@@ -96,6 +100,7 @@
 - 解决h5预览图片旋转90°问题
 - 增加腾讯云上传图片插件
 - 删除图标可动态设置(上、左、下、右)
+- 使用canvas压缩上传前的图片
 
 
 ### 使用Step1(导入main.js,)=>导入组件这一步可以参考：http://ask.dcloud.net.cn/article/35409
@@ -113,12 +118,13 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 <template>
 	<view>
 		<view>
-			
+
 			<sunui-upbasic :upImgConfig="upImgBasic" @onUpImg="upBasicData"></sunui-upbasic>
 			<button type="primary" @tap="getUpImgInfoBasic">获取上传Basic图片信息</button>
-			
-			<sunui-upoos :upImgConfig="upImgOos" @onUpImg="upOosData" @onImgDel="delImgInfo"></sunui-upoos>
+
+			<sunui-upoos :upImgConfig="upImgOos" @onUpImg="upOosData" @onImgDel="delImgInfo" ref="uImage"></sunui-upoos>
 			<button type="primary" @tap="getUpImgInfoOos">获取上传Oos图片信息</button>
+			<button type="primary" @tap="uImageTap">手动上传图片</button>
 
 			<sunui-upqiniu :upImgConfig="upImgQiniu" @onUpImg="upQiniuData"></sunui-upqiniu>
 			<button type="primary" @tap="getUpImgInfoQiniu">获取上传Qiniu图片信息</button>
@@ -155,28 +161,30 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 						fileHead: 'file',
 						key: (new Date()).getTime()
 					},
-					// 是否开启提示(提醒上传)
-					tips: false,
+					// 是否开启提示(提醒上传图片的数量)
+					tips: true,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
-					count: 2,
+					count: 5,
 					// 相机来源([相机,相册],[相机])
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
-					// 新增上传背景修改
-					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改(仅限于iconfont)
-					iconColor: '#fff',
+					// 上传图片背景修改 
+					upBgColor: '#E8A400',
+					// 上传icon图标颜色修改(仅限于iconfont)
+					upIconColor: '#fff',
 					// 上传文字描述(仅限四个字)
-					text: '上传照片',
+					upTextDesc: '上传照片',
+					// 删除按钮位置(left,right,bleft,bright),默认右上角
+					delBtnLocation: 'bleft',
 					// 是否显示添加图片
 					isAddImage: true,
 					// 是否显示删除图标
 					isDelIcon: true,
 					// 删除图标定义背景颜色
-					delIconColor: '#f00',
+					delIconColor: '',
 					// 删除图标字体颜色
 					delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
@@ -192,8 +200,7 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 						// 阿里云oos上传目录(必须存在)
 						oosDirectory: 'mifanimg',
 						// 阿里云上传url
-						url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/',
-						// 是否阿里云oos,true启用;false使用basicConfig.url(也就是公司后端提供的接口)
+						url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/'
 					},
 					// 是否开启提示(提醒上传)
 					tips: false,
@@ -205,16 +212,18 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
-					// 新增上传背景修改
-					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改(仅限于iconfont)
-					iconColor: '#fff',
+					// 上传图片背景修改 
+					upBgColor: '#0089FC',
+					// 上传icon图标颜色修改(仅限于iconfont)
+					upIconColor: '#fff',
 					// 上传文字描述(仅限四个字)
-					text: '上传图片',
-					// 是否显示删除图标
-					isDelIcon: true,
+					upTextDesc: '上传照片',
+					// 删除按钮位置(left,right,bleft,bright),默认右上角
+					delBtnLocation: 'bright',
 					// 是否显示添加图片
 					isAddImage: true,
+					// 是否显示删除图标
+					isDelIcon: true,
 					// 删除图标定义背景颜色
 					delIconColor: '',
 					// 删除图标字体颜色
@@ -238,16 +247,18 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
-					// 新增上传背景修改
-					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改(仅限于iconfont)
-					iconColor: '#fff',
-					// 是否显示删除图标
-					isDelIcon: true,
+					// 上传图片背景修改 
+					upBgColor: '#1AA034',
+					// 上传icon图标颜色和描述文字修改(仅限于iconfont)
+					upIconColor: '#fff',
+					// 上传文字描述(仅限四个字)
+					upTextDesc: '上传照片',
+					// 删除按钮位置(left,right,bleft,bright),默认右上角
+					delBtnLocation: 'right',
 					// 是否显示添加图片
 					isAddImage: true,
-					// 上传文字描述(仅限四个字)
-					text: '上传图片',
+					// 是否显示删除图标
+					isDelIcon: true,
 					// 删除图标定义背景颜色
 					delIconColor: '',
 					// 删除图标字体颜色
@@ -267,10 +278,10 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 					// 七牛云相关配置
 					this.upImgQiniu = {
 						qiniuConfig: {
-							region: 'SCN',
-							uptokenURL: 'wuqiangxi',
+							region: res.data.info.area,
+							uptokenURL: res.data.info.bucket,
 							uptoken: res.data.info.token,
-							domain: 'wpx.weijuyunke.cn',
+							domain: res.data.info.url,
 							shouldUseQiniuFileName: false,
 							fileHead: 'file',
 							key: (new Date()).getTime()
@@ -285,12 +296,18 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 						sourceType: true,
 						// 是否压缩上传照片(仅小程序生效)
 						sizeType: true,
-						// 新增上传背景修改
-						bgColor: '#0089FC',
-						// 新增上传icon图标颜色修改
-						iconColor: '#fff',
+						// 上传图片背景修改 
+						upBgColor: '#E8A400',
+						// 上传icon图标颜色修改(仅限于iconfont)
+						upIconColor: '#fff',
 						// 上传文字描述(仅限四个字)
-						text: '上传图片',
+						upTextDesc: '上传照片',
+						// 删除按钮位置(left,right,bleft,bright),默认右上角
+						delBtnLocation: 'bleft',
+						// 是否显示添加图片
+						isAddImage: true,
+						// 是否显示删除图标
+						isDelIcon: true,
 						// 删除图标定义背景颜色
 						delIconColor: '',
 						// 删除图标字体颜色
@@ -304,6 +321,10 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 			});
 		},
 		methods: {
+			// 手动上传图片(适用于表单等上传) -2019/05/10增加
+			uImageTap() {
+				this.$refs.uImage.uploadimage(this.upImgOos);
+			},
 			// 删除图片
 			async delImgInfo(e) {
 				console.log('你删除的图片地址为:', e);
@@ -384,17 +405,14 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 			},
 			// 获取上传图片basic
 			getUpImgInfoBasic() {
-				console.log('转成多维数组:', this.basicArr);
 				console.log('转成一维数组:', this.basicArr.join().split(','));
 			},
 			// 获取上传图片阿里云
 			getUpImgInfoOos() {
-				console.log('转成多维数组:', this.oosArr);
 				console.log('转成一维数组:', this.oosArr.join().split(','));
 			},
 			// 获取上传图片七牛云
 			getUpImgInfoQiniu() {
-				console.log('转成多维数组:', this.qiniuArr);
 				console.log('转成一维数组:', this.qiniuArr.join().split(','));
 			}
 		}
@@ -403,11 +421,17 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 
 
 <style>
-
+	button,
+	button:after {
+		border-radius: 0;
+	}
 </style>
+
 
 ```
 
-
+### License
+#### MIT  
+Copyright (c) 2018-present, 1940694428@qq.com
 
 ##### *其它待开发...*

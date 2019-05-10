@@ -5,20 +5,20 @@
 				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
 				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
-				<text class='del iconfont icon-shanchu' :class="upImgConfig.iconLocation=='left'?'left':upImgConfig.iconLocation=='right'?'right':upImgConfig.iconLocation=='bleft'?'bleft':upImgConfig.iconLocation=='bright'?'bright':'right'"
+				<text class='del iconfont icon-shanchu' :class="upImgConfig.delBtnLocation=='left'?'left':upImgConfig.delBtnLocation=='right'?'right':upImgConfig.delBtnLocation=='bleft'?'bleft':upImgConfig.delBtnLocation=='bright'?'bright':'right'"
 				 @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor"
-				 :hidden="!upImgConfig.isDelIcon">
-				</text>
+				 :hidden="!upImgConfig.isDelIcon"></text>
 			</view>
 			<view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-if="upImgConfig.iconReplace =='' || upImgConfig.iconReplace==undefined">
-					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.bgColor+''"
+					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.upBgColor+''"
 					 v-show="upImgConfig.isAddImage">
 						<!-- 这里可以改为字体图标/iconfont -->
 						<view class="icon-addicon"></view>
-						<view class="icon-text" :style="'color:'+upImgConfig.iconColor+';width:100%;'">{{upImgConfig.text}}</view>
+						<view class="icon-text" :style="'color:'+upImgConfig.upIconColor+';width:100%;'">{{upImgConfig.upTextDesc}}</view>
 					</view>
 				</view>
+
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-else>
 					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'" v-show="upImgConfig.isAddImage">
 						<image :src="upImgConfig.iconReplace" class="icon_replace"></image>
@@ -214,7 +214,7 @@
 <style scoped>
 	/* 2019/05/10,删除图标采用iconfont */
 	@import url("../static/sunui-upimg/icon/iconfont-remove.css");
-	
+
 	/* 
 		2019/05/05,新增svg(准备替换iconfont)->仍需使用iconfont,可以参考sunui-upimg.vue
 		微信小程序不支持本地,而Apple不支持网络路径.所以你可能需要多写点兼容了,以下已给出示例.

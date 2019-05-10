@@ -5,8 +5,9 @@
 			<sunui-upbasic :upImgConfig="upImgBasic" @onUpImg="upBasicData"></sunui-upbasic>
 			<button type="primary" @tap="getUpImgInfoBasic">获取上传Basic图片信息</button>
 
-			<sunui-upoos :upImgConfig="upImgOos" @onUpImg="upOosData" @onImgDel="delImgInfo"></sunui-upoos>
+			<sunui-upoos :upImgConfig="upImgOos" @onUpImg="upOosData" @onImgDel="delImgInfo" ref="uImage"></sunui-upoos>
 			<button type="primary" @tap="getUpImgInfoOos">获取上传Oos图片信息</button>
+			<button type="primary" @tap="uImageTap">手动上传图片</button>
 
 			<sunui-upqiniu :upImgConfig="upImgQiniu" @onUpImg="upQiniuData"></sunui-upqiniu>
 			<button type="primary" @tap="getUpImgInfoQiniu">获取上传Qiniu图片信息</button>
@@ -43,24 +44,24 @@
 						fileHead: 'file',
 						key: (new Date()).getTime()
 					},
-					// 是否开启提示(提醒上传)
-					tips: false,
+					// 是否开启提示(提醒上传图片的数量)
+					tips: true,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
-					count: 2,
+					count: 5,
 					// 相机来源([相机,相册],[相机])
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
-					// 新增上传背景修改
-					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改(仅限于iconfont)
-					iconColor: '#fff',
+					// 上传图片背景修改 
+					upBgColor: '#E8A400',
+					// 上传icon图标颜色修改(仅限于iconfont)
+					upIconColor: '#fff',
 					// 上传文字描述(仅限四个字)
-					text: '上传照片',
+					upTextDesc: '上传照片',
 					// 删除按钮位置(left,right,bleft,bright),默认右上角
-					iconLocation: 'bright',
+					delBtnLocation: 'bleft',
 					// 是否显示添加图片
 					isAddImage: true,
 					// 是否显示删除图标
@@ -82,8 +83,7 @@
 						// 阿里云oos上传目录(必须存在)
 						oosDirectory: 'mifanimg',
 						// 阿里云上传url
-						url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/',
-						// 是否阿里云oos,true启用;false使用basicConfig.url(也就是公司后端提供的接口)
+						url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/'
 					},
 					// 是否开启提示(提醒上传)
 					tips: false,
@@ -95,18 +95,18 @@
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
-					// 新增上传背景修改
-					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改(仅限于iconfont)
-					iconColor: '#fff',
+					// 上传图片背景修改 
+					upBgColor: '#0089FC',
+					// 上传icon图标颜色修改(仅限于iconfont)
+					upIconColor: '#fff',
 					// 上传文字描述(仅限四个字)
-					text: '上传图片',
-					// 是否显示删除图标
-					isDelIcon: true,
+					upTextDesc: '上传照片',
+					// 删除按钮位置(left,right,bleft,bright),默认右上角
+					delBtnLocation: 'bright',
 					// 是否显示添加图片
 					isAddImage: true,
-					// 删除按钮位置(left,right,bleft,bright),默认右上角
-					iconLocation: 'left',
+					// 是否显示删除图标
+					isDelIcon: true,
 					// 删除图标定义背景颜色
 					delIconColor: '',
 					// 删除图标字体颜色
@@ -130,22 +130,22 @@
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
-					// 新增上传背景修改
-					bgColor: '#0089FC',
-					// 新增上传icon图标颜色修改(仅限于iconfont)
-					iconColor: '#fff',
-					// 是否显示删除图标
-					isDelIcon: true,
+					// 上传图片背景修改 
+					upBgColor: '#1AA034',
+					// 上传icon图标颜色和描述文字修改(仅限于iconfont)
+					upIconColor: '#fff',
+					// 上传文字描述(仅限四个字)
+					upTextDesc: '上传照片',
+					// 删除按钮位置(left,right,bleft,bright),默认右上角
+					delBtnLocation: 'right',
 					// 是否显示添加图片
 					isAddImage: true,
-					// 删除按钮位置(left,right,bleft,bright),默认右上角
-					iconLocation: 'right',
-					// 上传文字描述(仅限四个字)
-					text: '上传图片',
+					// 是否显示删除图标
+					isDelIcon: true,
 					// 删除图标定义背景颜色
-					delIconColor: '#eee',
+					delIconColor: '',
 					// 删除图标字体颜色
-					delIconText: '#000',
+					delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
 					iconReplace: ''
 				}
@@ -169,7 +169,7 @@
 							fileHead: 'file',
 							key: (new Date()).getTime()
 						},
-							// 是否开启提示(提醒上传)
+						// 是否开启提示(提醒上传)
 						tips: false,
 						// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 						notli: false,
@@ -179,18 +179,18 @@
 						sourceType: true,
 						// 是否压缩上传照片(仅小程序生效)
 						sizeType: true,
-						// 新增上传背景修改
-						bgColor: '#0089FC',
-						// 新增上传icon图标颜色修改(仅限于iconfont)
-						iconColor: '#fff',
-						// 是否显示删除图标
-						isDelIcon: true,
+						// 上传图片背景修改 
+						upBgColor: '#E8A400',
+						// 上传icon图标颜色修改(仅限于iconfont)
+						upIconColor: '#fff',
+						// 上传文字描述(仅限四个字)
+						upTextDesc: '上传照片',
+						// 删除按钮位置(left,right,bleft,bright),默认右上角
+						delBtnLocation: 'bleft',
 						// 是否显示添加图片
 						isAddImage: true,
-						// 删除按钮位置(left,right,bleft,bright),默认右上角
-						iconLocation: '',
-						// 上传文字描述(仅限四个字)
-						text: '上传图片',
+						// 是否显示删除图标
+						isDelIcon: true,
 						// 删除图标定义背景颜色
 						delIconColor: '',
 						// 删除图标字体颜色
@@ -204,6 +204,10 @@
 			});
 		},
 		methods: {
+			// 手动上传图片(适用于表单等上传) -2019/05/10增加
+			uImageTap() {
+				this.$refs.uImage.uploadimage(this.upImgOos);
+			},
 			// 删除图片
 			async delImgInfo(e) {
 				console.log('你删除的图片地址为:', e);
@@ -284,17 +288,14 @@
 			},
 			// 获取上传图片basic
 			getUpImgInfoBasic() {
-				console.log('转成多维数组:', this.basicArr);
 				console.log('转成一维数组:', this.basicArr.join().split(','));
 			},
 			// 获取上传图片阿里云
 			getUpImgInfoOos() {
-				console.log('转成多维数组:', this.oosArr);
 				console.log('转成一维数组:', this.oosArr.join().split(','));
 			},
 			// 获取上传图片七牛云
 			getUpImgInfoQiniu() {
-				console.log('转成多维数组:', this.qiniuArr);
 				console.log('转成一维数组:', this.qiniuArr.join().split(','));
 			}
 		}
@@ -303,5 +304,8 @@
 
 
 <style>
-
+	button,
+	button:after {
+		border-radius: 0;
+	}
 </style>
