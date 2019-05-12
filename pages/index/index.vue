@@ -45,31 +45,33 @@
 						key: (new Date()).getTime()
 					},
 					// 是否开启提示(提醒上传图片的数量)
-					tips: true,
+					// tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
-					count: 5,
+					count: 2,
 					// 相机来源([相机,相册],[相机])
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
 					// 上传图片背景修改 
-					upBgColor: '#E8A400',
+					upBgColor: '#467CD4',
 					// 上传icon图标颜色修改(仅限于iconfont)
 					upIconColor: '#fff',
+					// 上传svg图标名称
+					upSvgIconName: 'icon-card',
 					// 上传文字描述(仅限四个字)
-					upTextDesc: '上传照片',
+					upTextDesc: '上传身份证',
 					// 删除按钮位置(left,right,bleft,bright),默认右上角
-					delBtnLocation: 'bleft',
-					// 是否显示添加图片
-					isAddImage: true,
-					// 是否显示删除图标
-					isDelIcon: true,
+					// delBtnLocation: 'bleft',
+					// 是否隐藏添加图片
+					// isAddImage: false,
+					// 是否隐藏删除图标
+					// isDelIcon: false,
 					// 删除图标定义背景颜色
-					delIconColor: '',
+					// delIconColor: '',
 					// 删除图标字体颜色
-					delIconText: '',
+					// delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
 					iconReplace: ''
 				},
@@ -85,8 +87,8 @@
 						// 阿里云上传url
 						url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/'
 					},
-					// 是否开启提示(提醒上传)
-					tips: false,
+					// 是否开启提示(提醒上传图片的数量)
+					// tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
@@ -96,23 +98,25 @@
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
 					// 上传图片背景修改 
-					upBgColor: '#0089FC',
+					upBgColor: '#E8A400',
 					// 上传icon图标颜色修改(仅限于iconfont)
-					upIconColor: '#fff',
+					upIconColor: '#eee',
+					// 上传svg图标名称
+					upSvgIconName: 'icon-certificate',
 					// 上传文字描述(仅限四个字)
-					upTextDesc: '上传照片',
+					// upTextDesc: '上传证书',
 					// 删除按钮位置(left,right,bleft,bright),默认右上角
-					delBtnLocation: 'bright',
-					// 是否显示添加图片
-					isAddImage: true,
-					// 是否显示删除图标
-					isDelIcon: true,
+					// delBtnLocation: 'bleft',
+					// 是否隐藏添加图片
+					// isAddImage: false,
+					// 是否隐藏删除图标
+					// isDelIcon: false,
 					// 删除图标定义背景颜色
-					delIconColor: '',
+					// delIconColor: '',
 					// 删除图标字体颜色
-					delIconText: '',
+					// delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
-					iconReplace: ''
+					// iconReplace: ''
 				},
 				// 基础版配置
 				upImgBasic: {
@@ -120,8 +124,8 @@
 					basicConfig: {
 						url: 'https://p.dns06.net.cn/index.php?m=Api&c=index&a=upload'
 					},
-					// 是否开启提示(提醒上传)
-					tips: false,
+					// 是否开启提示(提醒上传图片的数量)
+					// tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
@@ -131,21 +135,23 @@
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
 					// 上传图片背景修改 
-					upBgColor: '#1AA034',
-					// 上传icon图标颜色和描述文字修改(仅限于iconfont)
+					upBgColor: '#E8A400',
+					// 上传icon图标颜色修改(仅限于iconfont)
 					upIconColor: '#fff',
+					// 上传svg图标名称
+					// upSvgIconName: 'icon-card',
 					// 上传文字描述(仅限四个字)
-					upTextDesc: '上传照片',
+					// upTextDesc: '上传证书',
 					// 删除按钮位置(left,right,bleft,bright),默认右上角
-					delBtnLocation: 'right',
-					// 是否显示添加图片
-					isAddImage: true,
-					// 是否显示删除图标
-					isDelIcon: true,
+					// delBtnLocation: 'bleft',
+					// 是否隐藏添加图片
+					// isAddImage: false,
+					// 是否隐藏删除图标
+					// isDelIcon: false,
 					// 删除图标定义背景颜色
-					delIconColor: '',
+					// delIconColor: '',
 					// 删除图标字体颜色
-					delIconText: '',
+					// delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
 					iconReplace: ''
 				}
@@ -169,8 +175,8 @@
 							fileHead: 'file',
 							key: (new Date()).getTime()
 						},
-						// 是否开启提示(提醒上传)
-						tips: false,
+						// 是否开启提示(提醒上传图片的数量)
+						// tips: false,
 						// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 						notli: false,
 						// 图片数量
@@ -180,21 +186,23 @@
 						// 是否压缩上传照片(仅小程序生效)
 						sizeType: true,
 						// 上传图片背景修改 
-						upBgColor: '#E8A400',
+						upBgColor: '#467CD4',
 						// 上传icon图标颜色修改(仅限于iconfont)
 						upIconColor: '#fff',
+						// 上传svg图标名称
+						upSvgIconName: 'icon-card',
 						// 上传文字描述(仅限四个字)
-						upTextDesc: '上传照片',
+						// upTextDesc: '上传证书',
 						// 删除按钮位置(left,right,bleft,bright),默认右上角
-						delBtnLocation: 'bleft',
-						// 是否显示添加图片
-						isAddImage: true,
-						// 是否显示删除图标
-						isDelIcon: true,
+						// delBtnLocation: 'bleft',
+						// 是否隐藏添加图片
+						// isAddImage: false,
+						// 是否隐藏删除图标
+						// isDelIcon: false,
 						// 删除图标定义背景颜色
-						delIconColor: '',
+						// delIconColor: '',
 						// 删除图标字体颜色
-						delIconText: '',
+						// delIconText: '',
 						// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
 						iconReplace: ''
 					}

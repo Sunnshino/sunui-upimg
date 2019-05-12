@@ -6,7 +6,7 @@
 
 ---------------------
 
-### 分离源码(后端版10k、阿里云版12k、七牛云版11k)
+### 分离源码(后端版11k、七牛云版12k、阿里云版13k)
 >例子：假如我使用七牛云的上传图片(sunui-upimg目录我就只需要保留sunui-upimg-qiniu.vue和“qiniu”文件夹即可;在sunui-upimg目录其它均可删除)
 - sunui-upimg-basic.vue(后端版),极易扩展
 - sunui-upimg-alioos.vue(阿里云版),需要复制文件夹“ali-oos”
@@ -43,22 +43,26 @@
 
 ### 通用配置
 
-|版本号	|更新时间	|关键字			|功能作用																			|类型			|
-|--		|--			|--				|--																					|--				|
-|v1.x	|			|tips			|显示将要上传图片的提示信息															|Boolean		|
-|v1.x	|			|notli			|是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)			|Boolean		|
-|v1.x	|			|count			|上传图片数量																		|String,Number	|
-|v1.x	|			|sourceType		|照片来源([相机,相册],[相机])														|Boolean		|
-|v1.x	|			|sizeType		|是否压缩上传照片(仅小程序生效)														|Boolean		|
-|v1.x	|			|bgColor		|上传背景颜色更改																	|RGB			|
-|v1.x	|			|iconColor		|上传icon图标颜色修改(仅限于字体图标/iconfont)										|RGB			|
-|v1.x	|			|text			|上传文字描述(仅限四个字,默认上传图片)												|String			|
-|v1.x	|			|delIconColor	|删除按钮的背景颜色																	|RGB			|
-|v1.x	|			|delIconText	|删除按钮的文字颜色																	|RGB			|
-|v1.x	|			|iconReplace	|使用图片来替换上传图片(需要是http/https链接地址)									|String			|
-|v2.1	|2019/05/08	|isDelIcon		|是否显示上传图片的删除图标															|Boolean		|
-|v2.1	|2019/05/08	|isAddImage		|是否显示上传图片的添加按钮															|Boolean		|
-|v2.24	|2019/05/10	|iconLocation	|上传图片的删除图标位置:左上角(left)、右上角(right)、左下角(bleft)、右下角(bright)	|String			|
+
+|版本号	|更新时间	|关键字			|默认值				|功能作用																			|类型			|
+|--		|--			|--				|--					|--																					|--				|
+|v1.x	|			|tips			|false				|显示将要上传图片的数量提示信息														|Boolean		|
+|v1.x	|			|notli			|false				|是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)			|Boolean		|
+|v1.x	|			|count			|无(必填)			|上传图片数量,notli参数为true就失效													|String,Number	|
+|v1.x	|			|sourceType		|false				|照片来源([相机,相册],[相机])														|Boolean		|
+|v1.x	|			|sizeType		|true				|是否压缩上传照片(仅小程序生效)														|Boolean		|
+|v1.x	|			|upBgColor		|rgb(0, 137, 252)	|上传添加背景颜色																	|RGB,HEX		|
+|v1.x	|			|upIconColor	|无(#000)			|上传icon图标颜色修改(仅限于字体图标/iconfont和描述文字)							|HEX			|
+|v1.x	|			|upTextDesc		|上传图片			|上传文字描述(仅限四个字,默认上传图片)												|String			|
+|v1.x	|			|delIconColor	|无					|删除按钮的背景颜色																	|RGB,HEX		|
+|v1.x	|			|delIconText	|无					|删除按钮的文字颜色																	|HEX			|
+|v1.x	|			|iconReplace	|无					|使用图片来替换上传图片(需要是http/https链接地址)									|String			|
+|v2.1	|2019/05/08	|isDelIcon		|false				|是否隐藏上传图片的删除图标															|Boolean		|
+|v2.1	|2019/05/08	|isAddImage		|false				|是否隐藏上传图片的添加按钮															|Boolean		|
+|v2.24	|			|delBtnLocation	|right				|上传图片的删除图标位置:左上角(left)、右上角(right)、左下角(bleft)、右下角(bright)	|String			|
+|v2.33	|2019/05/11	|upSvgIconName	|icon-addicon		|上传图标svg名称,可看源码进行扩展.													|String			|
+
+
 
 
 
@@ -88,7 +92,13 @@
 |v2.22		|2019/05/10		|删除sunui-upimg.vue,更新使用文档																									|
 |v2.25		|2019/05/10		|可引入iconfont自定义删除图标,具体引入请查看sunui-upimg-basic																		|
 |v2.26		|2019/05/11		|可**手动(调用)上传图片**,具体查看阿里云上传示例,**注意配合count参数**使用; 注意看方法:**uImageTap**								|
-|v2.27		|2019/05/11		|修改配置文件,使其更加标准化、语义化																								|
+|v2.3(beta)	|2019/05/11		|修改配置文件名称,使其更加标准化、语义化																							|
+|v2.3		|2019/05/11		|修复bug,移除http://ext.dcloud.net.cn/plugin?id=341																					|
+|v2.31		|2019/05/11		|App已测试Android端通过. 已添加svg图标为链接形式																					|
+|v2.32		|2019/05/11		|h5采用本地svg,其它端为链接方式.																									|
+|v2.34		|2019/05/12		|添加static目录使其示例能够运行;为**“通用配置”**添加一些默认值(减少一些配置项),具体看示例																								|
+
+
 
 
 
@@ -162,31 +172,33 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 						key: (new Date()).getTime()
 					},
 					// 是否开启提示(提醒上传图片的数量)
-					tips: true,
+					// tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
-					count: 5,
+					count: 2,
 					// 相机来源([相机,相册],[相机])
 					sourceType: true,
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
 					// 上传图片背景修改 
-					upBgColor: '#E8A400',
+					upBgColor: '#467CD4',
 					// 上传icon图标颜色修改(仅限于iconfont)
 					upIconColor: '#fff',
+					// 上传svg图标名称
+					upSvgIconName: 'icon-card',
 					// 上传文字描述(仅限四个字)
-					upTextDesc: '上传照片',
+					upTextDesc: '上传身份证',
 					// 删除按钮位置(left,right,bleft,bright),默认右上角
-					delBtnLocation: 'bleft',
-					// 是否显示添加图片
-					isAddImage: true,
-					// 是否显示删除图标
-					isDelIcon: true,
+					// delBtnLocation: 'bleft',
+					// 是否隐藏添加图片
+					// isAddImage: false,
+					// 是否隐藏删除图标
+					// isDelIcon: false,
 					// 删除图标定义背景颜色
-					delIconColor: '',
+					// delIconColor: '',
 					// 删除图标字体颜色
-					delIconText: '',
+					// delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
 					iconReplace: ''
 				},
@@ -202,8 +214,8 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 						// 阿里云上传url
 						url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/'
 					},
-					// 是否开启提示(提醒上传)
-					tips: false,
+					// 是否开启提示(提醒上传图片的数量)
+					// tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
@@ -213,23 +225,25 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
 					// 上传图片背景修改 
-					upBgColor: '#0089FC',
+					upBgColor: '#E8A400',
 					// 上传icon图标颜色修改(仅限于iconfont)
-					upIconColor: '#fff',
+					upIconColor: '#eee',
+					// 上传svg图标名称
+					upSvgIconName: 'icon-certificate',
 					// 上传文字描述(仅限四个字)
-					upTextDesc: '上传照片',
+					// upTextDesc: '上传证书',
 					// 删除按钮位置(left,right,bleft,bright),默认右上角
-					delBtnLocation: 'bright',
-					// 是否显示添加图片
-					isAddImage: true,
-					// 是否显示删除图标
-					isDelIcon: true,
+					// delBtnLocation: 'bleft',
+					// 是否隐藏添加图片
+					// isAddImage: false,
+					// 是否隐藏删除图标
+					// isDelIcon: false,
 					// 删除图标定义背景颜色
-					delIconColor: '',
+					// delIconColor: '',
 					// 删除图标字体颜色
-					delIconText: '',
+					// delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
-					iconReplace: ''
+					// iconReplace: ''
 				},
 				// 基础版配置
 				upImgBasic: {
@@ -237,8 +251,8 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 					basicConfig: {
 						url: 'https://p.dns06.net.cn/index.php?m=Api&c=index&a=upload'
 					},
-					// 是否开启提示(提醒上传)
-					tips: false,
+					// 是否开启提示(提醒上传图片的数量)
+					// tips: false,
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
@@ -248,21 +262,23 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
 					// 上传图片背景修改 
-					upBgColor: '#1AA034',
-					// 上传icon图标颜色和描述文字修改(仅限于iconfont)
+					upBgColor: '#E8A400',
+					// 上传icon图标颜色修改(仅限于iconfont)
 					upIconColor: '#fff',
+					// 上传svg图标名称
+					// upSvgIconName: 'icon-card',
 					// 上传文字描述(仅限四个字)
-					upTextDesc: '上传照片',
+					// upTextDesc: '上传证书',
 					// 删除按钮位置(left,right,bleft,bright),默认右上角
-					delBtnLocation: 'right',
-					// 是否显示添加图片
-					isAddImage: true,
-					// 是否显示删除图标
-					isDelIcon: true,
+					// delBtnLocation: 'bleft',
+					// 是否隐藏添加图片
+					// isAddImage: false,
+					// 是否隐藏删除图标
+					// isDelIcon: false,
 					// 删除图标定义背景颜色
-					delIconColor: '',
+					// delIconColor: '',
 					// 删除图标字体颜色
-					delIconText: '',
+					// delIconText: '',
 					// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
 					iconReplace: ''
 				}
@@ -286,8 +302,8 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 							fileHead: 'file',
 							key: (new Date()).getTime()
 						},
-						// 是否开启提示(提醒上传)
-						tips: false,
+						// 是否开启提示(提醒上传图片的数量)
+						// tips: false,
 						// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 						notli: false,
 						// 图片数量
@@ -297,21 +313,23 @@ Vue.component('sunui-upqiniu',sunUiqiNiu)
 						// 是否压缩上传照片(仅小程序生效)
 						sizeType: true,
 						// 上传图片背景修改 
-						upBgColor: '#E8A400',
+						upBgColor: '#467CD4',
 						// 上传icon图标颜色修改(仅限于iconfont)
 						upIconColor: '#fff',
+						// 上传svg图标名称
+						upSvgIconName: 'icon-card',
 						// 上传文字描述(仅限四个字)
-						upTextDesc: '上传照片',
+						// upTextDesc: '上传证书',
 						// 删除按钮位置(left,right,bleft,bright),默认右上角
-						delBtnLocation: 'bleft',
-						// 是否显示添加图片
-						isAddImage: true,
-						// 是否显示删除图标
-						isDelIcon: true,
+						// delBtnLocation: 'bleft',
+						// 是否隐藏添加图片
+						// isAddImage: false,
+						// 是否隐藏删除图标
+						// isDelIcon: false,
 						// 删除图标定义背景颜色
-						delIconColor: '',
+						// delIconColor: '',
 						// 删除图标字体颜色
-						delIconText: '',
+						// delIconText: '',
 						// 上传图标替换(+),是个http,https图片地址(https://www.playsort.cn/right.png)
 						iconReplace: ''
 					}

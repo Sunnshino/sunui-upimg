@@ -7,19 +7,19 @@
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
 				<text class='del' :class="upImgConfig.delBtnLocation=='left'?'left':upImgConfig.delBtnLocation=='right'?'right':upImgConfig.delBtnLocation=='bleft'?'bleft':upImgConfig.delBtnLocation=='bright'?'bright':'right'"
 				 @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor"
-				 :hidden="!upImgConfig.isDelIcon">×</text>
+				 :hidden="upImgConfig.isDelIcon || false">×</text>
 			</view>
 			<view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-if="upImgConfig.iconReplace =='' || upImgConfig.iconReplace==undefined">
 					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:'+upImgConfig.upBgColor+''"
-					 v-show="upImgConfig.isAddImage">
-					 <!-- 这里可以改为字体图标/iconfont -->
-						<view class="icon-addicon"></view>
-						<view class="icon-text" :style="'color:'+upImgConfig.upIconColor+';width:100%;'">{{upImgConfig.upTextDesc}}</view>
+					 v-show="!upImgConfig.isAddImage || false">
+						<!-- 这里可以改为字体图标/iconfont -->
+						<view class="icon-basic" :class="upImgConfig.upSvgIconName==undefined || upImgConfig.upSvgIconName==''?'icon-addicon':upImgConfig.upSvgIconName"></view>
+						<view class="icon-text" :style="'color:'+upImgConfig.upIconColor+';width:100%;'">{{upImgConfig.upTextDesc==undefined ||upImgConfig.upTextDesc==''?'上传照片':upImgConfig.upTextDesc}}</view>
 					</view>
 				</view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-else>
-					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'" v-show="upImgConfig.isAddImage">
+					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'" v-show="upImgConfig.isAddImage || true">
 						<image :src="upImgConfig.iconReplace" class="icon_replace"></image>
 					</view>
 				</view>
@@ -30,10 +30,7 @@
 
 <script>
 	const qiniuUploader = require('./qiniu/qiniuUploader.js');
-	// #ifdef APP-PLUS
-	const compressImage = require('../common/sunui-upimg-util.js'); //引入这位小伙伴的工具集:http://ext.dcloud.net.cn/plugin?id=341
-	const device = uni.getSystemInfoSync();
-	// #endif
+
 	export default {
 		data() {
 			return {
@@ -124,13 +121,6 @@
 		await qiniuUploader.init(options);
 	}
 
-	const compressImageHandler = async (src) => {
-		console.log('platform===' + device.platform)
-		const tempPath = await compressImage(src, device.platform);
-		console.log('tempPath-----' + tempPath);
-		return tempPath;
-	}
-
 
 	// 上传图片(通用)
 	const uImage = async (_this, config) => {
@@ -180,13 +170,7 @@
 				for (let i = 0, len = res.tempFiles.length; i < len; i++) {
 					res.tempFiles[i]['upload_percent'] = 0;
 					res.tempFiles[i]['path_server'] = '';
-					// #ifdef APP-PLUS
-					const src = await compressImageHandler(res.tempFilePaths[i]);
-					_this.upload_picture_list.push(src);
-					// #endif
-					// #ifndef APP-PLUS
 					_this.upload_picture_list.push(res.tempFiles[i]);
-					// #endif
 					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(
 						0,
 						config.count) : '';
@@ -217,13 +201,7 @@
 		console.log('up lii', _this.upload_picture_list);
 		let cacheImg = [];
 		for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
-			// #ifdef APP-PLUS
-			const src = await compressImageHandler(_this.upload_picture_list[i].path);
-			cacheImg.push(src);
-			// #endif
-			// #ifndef APP-PLUS
 			cacheImg.push(_this.upload_picture_list[i].path);
-			// #endif
 		}
 		uni.previewImage({
 			current: cacheImg[e.currentTarget.dataset.idx],
@@ -239,28 +217,53 @@
 		微信小程序不支持本地,而Apple不支持网络路径.所以你可能需要多写点兼容了,以下已给出示例.
 		只需要去:https://www.iconfont.cn/search/index?searchType=icon&q=%E4%B8%8A%E4%BC%A0%E5%9B%BE%E7%89%87下载对应的svg图标即可
 	*/
-	.icon-addicon {
+	.icon-basic {
 		display: block;
 		width: 72upx;
 		height: 72upx;
 		text-indent: 100%;
 		overflow: hidden;
 		white-space: nowrap;
-		/* #ifdef MP-WEIXIN */
-		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
-		/* #endif */
+	}
+	
+	.icon-addicon {
 		/* #ifdef H5 */
 		background: url('../static/sunui-upimg/icon/icon-up.svg') no-repeat;
+		/* #endif */
+		/* #ifndef H5 */
+		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
 		/* #endif */
 		background-position: center;
 		background-size: cover;
 	}
 	
+	.icon-card {
+		/* #ifdef H5 */
+		background: url('../static/sunui-upimg/icon/card.svg') no-repeat;
+		/* #endif */
+		/* #ifndef H5 */
+		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
+		/* #endif */
+		background-position: center;
+		background-size: cover;
+	}
+	
+	.icon-certificate {
+		/* #ifdef H5 */
+		background: url('../static/sunui-upimg/icon/certificate.svg') no-repeat;
+		/* #endif */
+		/* #ifndef H5 */
+		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
+		/* #endif */
+		background-position: center;
+		background-size: cover;
+	}
+
 	.icon-text {
 		font-size: 28upx;
 		margin-top: -25%;
 	}
-	
+
 	/* 循环列表样式 */
 	.sunsin_picture_list {
 		width: 96%;
@@ -272,13 +275,13 @@
 		flex-direction: row;
 		justify-content: flex-start;
 	}
-	
+
 	.sunsin_picture_list image {
 		width: 40upx;
 		height: 40upx;
 		margin: 0 4%;
 	}
-	
+
 	/* 添加图片样式 */
 	.sunsin_add_image {
 		width: 160upx;
@@ -295,7 +298,7 @@
 		align-items: center;
 		flex-wrap: wrap;
 	}
-	
+
 	/* 预览图片 */
 	.sunsin_picture_item {
 		position: relative;
@@ -304,7 +307,7 @@
 		margin: 20upx;
 		margin-left: 0;
 	}
-	
+
 	/* 删除按钮样式 */
 	.sunsin_picture_item .del {
 		position: absolute;
@@ -318,7 +321,7 @@
 		text-align: center;
 		background-color: #E54D42;
 	}
-	
+
 	/* 删除图标位置(上左) */
 	.sunsin_picture_item .del.left {
 		top: 0;
@@ -327,13 +330,13 @@
 		border-top-right-radius: 0;
 		border-top-left-radius: 6upx;
 	}
-	
+
 	/* 删除图标位置(上右) */
 	.sunsin_picture_item .del.right {
 		top: 0;
 		right: -4.2%;
 	}
-	
+
 	/* 删除图标位置(下左) */
 	.sunsin_picture_item .del.bleft {
 		bottom: 0;
@@ -341,7 +344,7 @@
 		border-top-left-radius: 0;
 		border-bottom-left-radius: 6upx;
 	}
-	
+
 	/* 删除图标位置(下右) */
 	.sunsin_picture_item .del.bright {
 		right: -4.2%;
@@ -349,7 +352,7 @@
 		border-top-right-radius: 0;
 		border-top-left-radius: 6upx;
 	}
-	
+
 	/* 进度遮罩层样式 */
 	.sunsin_upload_progress {
 		font-size: 24upx;
@@ -366,7 +369,7 @@
 		border-radius: 8upx;
 		background-color: #000;
 	}
-	
+
 	/* 自定义添加图片样式 */
 	.sunsin_picture_item image {
 		width: 160upx;
