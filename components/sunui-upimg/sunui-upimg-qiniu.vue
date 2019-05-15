@@ -19,7 +19,7 @@
 					</view>
 				</view>
 				<view class='sunsin_picture_item' v-show="upload_picture_list.length<upImgConfig.count || upImgConfig.notli" v-else>
-					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' :style="'background-color:#fff;'" v-show="upImgConfig.isAddImage || true">
+					<view class="sunsin_add_image" @click='chooseImage(upImgConfig.count)' style="'background-color:#fff;'" v-show="upImgConfig.isAddImage || true">
 						<image :src="upImgConfig.iconReplace" class="icon_replace"></image>
 					</view>
 				</view>
@@ -134,7 +134,8 @@
 	// 删除图片(通用)
 	const dImage = async (e, _this) => {
 		await _this.$emit('onImgDel', {
-			url: e.currentTarget.dataset.url
+			url: e.currentTarget.dataset.url,
+			index: e.currentTarget.dataset.index
 		});
 		_this.upload_picture_list.splice(e.currentTarget.dataset.index, 1);
 		_this.upload_after_list.splice(e.currentTarget.dataset.index, 1);
