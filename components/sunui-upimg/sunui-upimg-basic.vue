@@ -2,8 +2,8 @@
 	<view>
 		<view class="sunsin_picture_list">
 			<view v-for="(item,index) in upload_picture_list" :key="index" class="sunsin_picture_item">
-				<image v-show="item.upload_percent < 100" :src="item.path"></image>
-				<image v-show="item.upload_percent == 100" :src="item.path_server" :data-idx="index" @click="previewImgs"></image>
+				<image v-show="item.upload_percent < 100" :src="item.path" mode="aspectFill"></image>
+				<image v-show="item.upload_percent == 100" :src="item.path_server" mode="aspectFill" :data-idx="index" @click="previewImgs"></image>
 				<view class="sunsin_upload_progress" v-show="item.upload_percent < 100" :data-index="index" @click="previewImg">{{item.upload_percent}}%</view>
 				<text class='del iconfont icon-shanchu' :class="upImgConfig.delBtnLocation=='left'?'left':upImgConfig.delBtnLocation=='right'?'right':upImgConfig.delBtnLocation=='bleft'?'bleft':upImgConfig.delBtnLocation=='bright'?'bright':'right'"
 				 @click='deleteImg' :data-url="item.path_server" :data-index="index" :style="'color:'+upImgConfig.delIconText+';background-color:'+upImgConfig.delIconColor"
@@ -77,13 +77,13 @@
 			async success(res) {
 				if (res.statusCode == 200) {
 					let data = JSON.parse(res.data);
-					console.log('打印后端反馈的信息:', data);
+					console.log(`%c 后端上传(成功返回地址):${data.info}`, 'color:#1AAD19');
 					// 先获取图片url(各个后端返回值不一，所以造成出入)
 					// 修改获取的图片返回值路径
 					// 提示：data.info改为你图片返回地址即可
 					upload_picture_list[j]['path_server'] = data.info; //修改返回图片地址即可(2019/05/06) => 无论是腾讯云还是阿里云或者其它(只要返回图片地址以及引入对应的js文件进行一些配置即可扩展本插件)
 					_this.upload_picture_list = upload_picture_list;
-					await _this.$emit('onUpImg', _this.upload_picture_list);
+					await tImage(_this, upload_picture_list, configs.count);
 					uni.hideLoading();
 				}
 			},
@@ -105,6 +105,11 @@
 			}
 			_this.upload_picture_list = upload_picture_list
 		});
+	}
+
+	// 上传图片子组件->父组件(通用)
+	const tImage = async (_this, upload_picture_list,count) => {
+		await _this.$emit('onUpImg', _this.upload_picture_list);
 	}
 
 
@@ -143,8 +148,11 @@
 		uni.chooseImage({
 			count: config.notli ? config.count = 9 : _this.upload_after_list.length == 0 ? config.count : config.count -
 				_this.upload_after_list.length,
-			sizeType: config.sizeType ? ['compressed'] : ['original'],
-			sourceType: config.sourceType ? ['album', 'camera'] : ['camera'],
+			sizeType: config.sizeType == "" || config.sizeType == undefined || config.sizeType == true ? ['compressed'] : [
+				'original'
+			],
+			sourceType: config.sourceType == "" || config.sourceType == undefined ? ['album', 'camera'] : config.sourceType ==
+				'camera' ? ['camera'] : config.sourceType == 'album' ? ['album'] : ['album', 'camera'],
 			success: async (res) => {
 				for (let i = 0, len = res.tempFiles.length; i < len; i++) {
 					res.tempFiles[i]['upload_percent'] = 0;
@@ -153,18 +161,21 @@
 					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(
 						0,
 						config.count) : '';
-				}!config.notli && config.count == _this.upload_picture_list.length ? uImage(_this, config) : '';
-				config.notli && config.count == 9 ? uImage(_this, config) : '';
-				if (config.tips) {
-					config.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
-						`color:#f00;font-weight:bold;`) : console.log(
-						`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${config.count}`, `color:#f00;font-weight:bold;`);
 				}
-				_this.upload_after_list = _this.upload_after_list.concat(res.tempFilePaths).slice(0, config.count);
-				_this.upload_picture_list = _this.upload_picture_list.slice(0, config.count);
+				// 过滤多出的预览图片
+				await fImage(_this,res,config);
 			}
 		})
 	}
+	
+	// 过滤超出的预览图片以及上传(通用)
+	const fImage = (_this,res,config) =>{
+		!config.notli && config.count == _this.upload_picture_list.length ? uImage(_this, config) : '';
+		config.notli && config.count == 9 ? uImage(_this, config) : '';
+		_this.upload_after_list = _this.upload_after_list.concat(res.tempFilePaths).slice(0, config.count);
+		_this.upload_picture_list = _this.upload_picture_list.slice(0, config.count);
+	}
+	
 
 	// 上传前预览图片(通用)
 	const pImage = (e, _this) => {
@@ -190,7 +201,7 @@
 
 <style scoped>
 	/* 2019/05/10,删除图标采用iconfont */
-	@import url("../static/sunui-upimg/icon/iconfont-remove.css");
+	@import url("icon/iconfont-remove.css");
 
 	/* 
 		2019/05/05,新增svg(准备替换iconfont)->仍需使用iconfont,可以参考sunui-upimg.vue
@@ -208,7 +219,7 @@
 
 	.icon-addicon {
 		/* #ifdef H5 */
-		background: url('../static/sunui-upimg/icon/icon-up.svg') no-repeat;
+		background: url('icon/icon-up.svg') no-repeat;
 		/* #endif */
 		/* #ifndef H5 */
 		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
@@ -219,7 +230,7 @@
 
 	.icon-card {
 		/* #ifdef H5 */
-		background: url('../static/sunui-upimg/icon/card.svg') no-repeat;
+		background: url('icon/card.svg') no-repeat;
 		/* #endif */
 		/* #ifndef H5 */
 		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
@@ -230,7 +241,7 @@
 
 	.icon-certificate {
 		/* #ifdef H5 */
-		background: url('../static/sunui-upimg/icon/certificate.svg') no-repeat;
+		background: url('icon/certificate.svg') no-repeat;
 		/* #endif */
 		/* #ifndef H5 */
 		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
@@ -330,7 +341,6 @@
 		right: -4.2%;
 		bottom: 0;
 		border-top-right-radius: 0;
-		border-top-left-radius: 6upx;
 	}
 
 	/* 进度遮罩层样式 */

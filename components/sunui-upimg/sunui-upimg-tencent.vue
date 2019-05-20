@@ -35,7 +35,9 @@
 		data() {
 			return {
 				upload_after_list: [],
-				upload_picture_list: []
+				upload_picture_list: [
+					
+				]
 			};
 		},
 		name: 'sunui-upimg',
@@ -162,8 +164,11 @@
 		uni.chooseImage({
 			count: config.notli ? config.count = 9 : _this.upload_after_list.length == 0 ? config.count : config.count -
 				_this.upload_after_list.length,
-			sizeType: config.sizeType ? ['compressed'] : ['original'],
-			sourceType: config.sourceType ? ['album', 'camera'] : ['camera'],
+			sizeType: config.sizeType == "" || config.sizeType == undefined || config.sizeType == true ? ['compressed'] : [
+				'original'
+			],
+			sourceType: config.sourceType == "" || config.sourceType == undefined ? ['album', 'camera'] : config.sourceType ==
+				'camera' ? ['camera'] : config.sourceType == 'album' ? ['album'] : ['album', 'camera'],
 			success: async (res) => {
 				for (let i = 0, len = res.tempFiles.length; i < len; i++) {
 					res.tempFiles[i]['upload_percent'] = 0;
@@ -172,37 +177,40 @@
 					_this.upload_picture_list.length > config.count ? _this.upload_picture_list = _this.upload_picture_list.slice(
 						0,
 						config.count) : '';
-				}!config.notli && config.count == _this.upload_picture_list.length ? uImage(_this, config) : '';
-				config.notli && config.count == 9 ? uImage(_this, config) : '';
-				if (config.tips) {
-					config.notli ? console.log(`%c up-img提醒您，开启了最大上传图片模式(单次选择最多9张,选择完即上传)`,
-						`color:#f00;font-weight:bold;`) : console.log(
-						`%c up-img提醒您，开启了限制上传图片模式，目标数量为：${config.count}`, `color:#f00;font-weight:bold;`);
 				}
-				_this.upload_after_list = _this.upload_after_list.concat(res.tempFilePaths).slice(0, config.count);
-				_this.upload_picture_list = _this.upload_picture_list.slice(0, config.count);
+				// 过滤多出的预览图片
+				await fImage(_this, res, config);
 			}
 		})
 	}
 
+
+	// 过滤超出的预览图片以及上传(通用)
+	const fImage = (_this, res, config) => {
+		!config.notli && config.count == _this.upload_picture_list.length ? uImage(_this, config) : '';
+		config.notli && config.count == 9 ? uImage(_this, config) : '';
+		_this.upload_after_list = _this.upload_after_list.concat(res.tempFilePaths).slice(0, config.count);
+		_this.upload_picture_list = _this.upload_picture_list.slice(0, config.count);
+	}
+
 	// 上传前预览图片(通用)
 	const pImage = (e, _this) => {
+		let _cacheImg = [];
+		for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
+			_cacheImg.push(_this.upload_picture_list[i].path);
+		}
 		uni.previewImage({
-			current: _this.upload_after_list[e.currentTarget.dataset.index],
-			urls: _this.upload_after_list
-		})
+			current: _this.upload_picture_list[e.currentTarget.dataset.index].path,
+			urls: _cacheImg
+		});
 	}
 
 	// 上传后预览(通用)
 	const puImage = async (e, _this) => {
-		let cacheImg = [];
-		for (let i = 0, len = _this.upload_picture_list.length; i < len; i++) {
-			cacheImg.push(_this.upload_picture_list[i].path);
-		}
 		uni.previewImage({
-			current: cacheImg[e.currentTarget.dataset.idx],
-			urls: cacheImg
-		})
+			current: _this.upload_after_list[e.currentTarget.dataset.idx],
+			urls: _this.upload_after_list
+		});
 	}
 </script>
 
@@ -224,7 +232,7 @@
 
 	.icon-addicon {
 		/* #ifdef H5 */
-		background: url('../static/sunui-upimg/icon/icon-up.svg') no-repeat;
+		background: url('icon/icon-up.svg') no-repeat;
 		/* #endif */
 		/* #ifndef H5 */
 		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
@@ -235,7 +243,7 @@
 
 	.icon-card {
 		/* #ifdef H5 */
-		background: url('../static/sunui-upimg/icon/card.svg') no-repeat;
+		background: url('icon/card.svg') no-repeat;
 		/* #endif */
 		/* #ifndef H5 */
 		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
@@ -246,7 +254,7 @@
 
 	.icon-certificate {
 		/* #ifdef H5 */
-		background: url('../static/sunui-upimg/icon/certificate.svg') no-repeat;
+		background: url('icon/certificate.svg') no-repeat;
 		/* #endif */
 		/* #ifndef H5 */
 		background: url('https://www.playsort.cn/file/icon-up.svg') no-repeat;
@@ -346,7 +354,6 @@
 		right: -4.2%;
 		bottom: 0;
 		border-top-right-radius: 0;
-		border-top-left-radius: 6upx;
 	}
 
 	/* 进度遮罩层样式 */

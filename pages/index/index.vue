@@ -25,8 +25,8 @@
 					notli: false,
 					// 图片数量
 					count: 2,
-					// 相机来源([相机,相册],[相机])
-					sourceType: true,
+					// 相机来源(相机->camera,相册->album,两者都有->all,默认all)
+					sourceType: 'camera',
 					// 是否压缩上传照片(仅小程序生效)
 					sizeType: true,
 					// 上传图片背景修改 
@@ -38,7 +38,7 @@
 					// 上传文字描述(仅限四个字)
 					// upTextDesc: '上传证书',
 					// 删除按钮位置(left,right,bleft,bright),默认右上角
-					// delBtnLocation: 'bleft',
+					delBtnLocation: '',
 					// 是否隐藏添加图片
 					// isAddImage: false,
 					// 是否隐藏删除图标
@@ -66,6 +66,7 @@
 			},
 			// 基础版
 			async upBasicData(e) {
+				console.log('===>',e);
 				// 上传图片数组
 				let arrImg = [];
 				for (let i = 0, len = e.length; i < len; i++) {
