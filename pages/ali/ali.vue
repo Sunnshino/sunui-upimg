@@ -15,13 +15,13 @@
 				upImgOos: {
 					aliConfig: {
 						// 阿里云oos上传key_secret(后端传)
-						AccessKeySecret: 'zmOJcaqKJB5e4gqtLunHcNoMBTdDgp',
+						AccessKeySecret: 'xxxx',
 						// 阿里云oos上传key_id(后端传)
-						OSSAccessKeyId: 'LTAIPcJL9J5OZr2G',
+						OSSAccessKeyId: 'xxxx',
 						// 阿里云oos上传目录(必须存在)
-						oosDirectory: 'mifanimg',
+						oosDirectory: 'xx',
 						// 阿里云上传url
-						url: 'http://4zlinkimgtest.oss-cn-beijing.aliyuncs.com/'
+						url: 'xxx/'
 					},
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
