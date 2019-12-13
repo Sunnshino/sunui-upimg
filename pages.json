@@ -19,7 +19,11 @@
 			"path": "pages/ali/ali",
 			"style": {}
 		}
-	],
+	    ,{
+            "path" : "pages/easy/easy",
+            "style" : {}
+        }
+    ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "uni-app",

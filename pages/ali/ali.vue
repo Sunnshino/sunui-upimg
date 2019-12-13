@@ -15,18 +15,18 @@
 				upImgOos: {
 					aliConfig: {
 						// 阿里云oos上传key_secret(后端传)
-						AccessKeySecret: 'xxxx',
+						AccessKeySecret: '5iB8rf4vSVl4HmqWOMPIOkAgzmPvI8',
 						// 阿里云oos上传key_id(后端传)
-						OSSAccessKeyId: 'xxxx',
+						OSSAccessKeyId: 'LTAI4wU5hODbg7FX',
 						// 阿里云oos上传目录(必须存在)
-						oosDirectory: 'xx',
+						oosDirectory: 'uniapp',
 						// 阿里云上传url
-						url: 'xxx/'
+						url: 'http://sunui-uniapp.oss-cn-beijing.aliyuncs.com/'
 					},
 					// 是否开启notli(开启的话就是选择完直接上传，关闭的话当count满足数量时才上传)
 					notli: false,
 					// 图片数量
-					count: 2,
+					count: 4,
 					// 上传图片背景修改 
 					upBgColor: '#E8A400',
 					// 上传icon图标颜色修改(仅限于iconfont)

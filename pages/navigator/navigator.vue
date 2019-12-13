@@ -11,6 +11,9 @@
 		data() {
 			return {
 				navigatorList: [{
+					url: '../easy/easy',
+					title: '简便版上传'
+				},{
 						url: '../index/index',
 						title: '后端图片上传'
 					},
